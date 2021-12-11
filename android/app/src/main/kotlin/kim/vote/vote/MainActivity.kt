@@ -1,0 +1,6 @@
+package kim.vote.vote
+
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity : FlutterActivity() {
+}
