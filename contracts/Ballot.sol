@@ -10,16 +10,16 @@ contract Ballot {
     event AddedCandidate(uint candidateID);
 
     // describes a Voter, which has an id and the ID of the candidate they voted for
-    address owner = 0x953Dd4B339CEfd0995044035CFfA7FeA416a60e2;
+    address owner = 0xE93e3744f45c48019d2cA266E83Be695d5f98420;
 
     function Voting() public {
         owner = msg.sender;
 
     }
-    //modifier onlyOwner {
-       // require(msg.sender == owner);
-       // _;
-   // }
+    modifier onlyOwner {
+       require(msg.sender == owner);
+        _;
+    }
     struct Voter {
         bytes32 uid; // bytes32 type are basically strings
         uint candidateIDVote;
@@ -50,7 +50,7 @@ contract Ballot {
      *  These functions perform transactions, editing the mappings *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-    function addCandidate(bytes32 name, bytes32 party)  public {
+    function addCandidate(bytes32 name, bytes32 party) onlyOwner public {
         // candidateID is the return variable
         uint candidateID = numCandidates++;
         // Create new Candidate Struct with name and saves it to storage.

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -11,7 +12,7 @@ class ContractLinking extends ChangeNotifier {
   final String _rpcUrl = "http://127.0.0.1:7545";
   final String _wsUrl = "ws://127.0.0.1:7545/";
   final String _privateKey =
-      "86248298ec5d7e5a5ccb696d67ddb83eaf8d6c0eb4f0f53da415dc531454c9b6";
+      "def10b44ed1b7cd4dda92877f5d42d8bc7730b2c93ebcbe78e67831f12c0815f";
   late EthereumAddress owner;
 
   late Web3Client _client;
@@ -37,7 +38,7 @@ class ContractLinking extends ChangeNotifier {
   }
 
   inititalSetup() async {
-    _client = await Web3Client(_rpcUrl, Client(), socketConnector: () {
+    _client = Web3Client(_rpcUrl, Client(), socketConnector: () {
       return IOWebSocketChannel.connect(_wsUrl).cast<String>();
     });
     await getAbi();
@@ -56,7 +57,7 @@ class ContractLinking extends ChangeNotifier {
   }
 
   getCredentials() async {
-    _credentials = await _client.credentialsFromPrivateKey(_privateKey);
+    _credentials = EthPrivateKey.fromHex(_privateKey);
     owner = await _credentials.extractAddress();
   }
 
@@ -83,7 +84,6 @@ class ContractLinking extends ChangeNotifier {
     await _client.sendTransaction(
         _credentials,
         Transaction.callContract(
-
             contract: _contract,
             function: _addCandidate,
             parameters: [name, party]));
@@ -119,14 +119,17 @@ class ContractLinking extends ChangeNotifier {
             contract: _contract, function: _numOfVoters, parameters: []));
   }
 
-  getCandidate(String candidateID) async {
+  getCandidate(BigInt candidateID) async {
     notifyListeners();
-    var candidates = await _client.sendTransaction(
+    var candida = await _client.sendTransaction(
         _credentials,
         Transaction.callContract(
-            contract: _contract, function: _getCandidate, parameters: []));
+            contract: _contract,
+            function: _getCandidate,
+            parameters: [candidateID]));
 
-    return candidates;
+    // ignore: avoid_print
+    return candida;
   }
 
   winner() async {
