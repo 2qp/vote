@@ -12,7 +12,7 @@ class ContractLinking extends ChangeNotifier {
   final String _rpcUrl = "http://127.0.0.1:7545";
   final String _wsUrl = "ws://127.0.0.1:7545/";
   final String _privateKey =
-      "def10b44ed1b7cd4dda92877f5d42d8bc7730b2c93ebcbe78e67831f12c0815f";
+      "b8be2fee48d254207dec8435a0054e7f223f7234b2e6c5e5dce5ecfd68d4a402";
   late EthereumAddress owner;
 
   late Web3Client _client;
@@ -44,7 +44,7 @@ class ContractLinking extends ChangeNotifier {
     await getAbi();
     await getCredentials();
     await getDeployedContract();
-    await voting();
+    //await voting();
   }
 
   getAbi() async {
@@ -71,11 +71,6 @@ class ContractLinking extends ChangeNotifier {
     _numOfCandidates = _contract.function("getNumOfCandidates");
     _numOfVoters = _contract.function("getNumOfVoters");
     _getCandidate = _contract.function("getCandidate");
-    _voting = _contract.function("Voting");
-  }
-
-  voting() async {
-    await _client.call(contract: _contract, function: _voting, params: []);
   }
 
   registerVoter(Uint8List name, Uint8List party) async {
@@ -121,15 +116,16 @@ class ContractLinking extends ChangeNotifier {
 
   getCandidate(BigInt candidateID) async {
     notifyListeners();
-    var candida = await _client.sendTransaction(
-        _credentials,
-        Transaction.callContract(
-            contract: _contract,
-            function: _getCandidate,
-            parameters: [candidateID]));
+    //var candida = await _client.sendTransaction(
+    //  _credentials,
+    //  Transaction.callContract(
+    //      contract: _contract,
+    //       function: _getCandidate,
+    //      parameters: [candidateID]));
 
-    // ignore: avoid_print
-    return candida;
+    var candidates = await _client.call(
+        contract: _contract, function: _getCandidate, params: [candidateID]);
+    return "$candidates";
   }
 
   winner() async {

@@ -74,8 +74,9 @@ class Voteui extends StatelessWidget {
 
     BigInt jj = BigInt.parse(canid);
 
-    String candidates = await contractLink.getCandidate(jj);
-    print(candidates);
+    var cans = await contractLink.getCandidate(jj);
+    print(cans);
+
     // ignore: avoid_print
   }
 }

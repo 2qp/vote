@@ -10,9 +10,9 @@ contract Ballot {
     event AddedCandidate(uint candidateID);
 
     // describes a Voter, which has an id and the ID of the candidate they voted for
-    address owner = 0xE93e3744f45c48019d2cA266E83Be695d5f98420;
+    address owner;
 
-    function Voting() public {
+    constructor ()  {
         owner = msg.sender;
 
     }
