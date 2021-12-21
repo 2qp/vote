@@ -1,9 +1,3 @@
-import 'dart:convert';
-
-import 'dart:ffi';
-
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -59,14 +53,14 @@ class Voteui extends StatelessWidget {
 
   void inputData(context, String uid, String canid) async {
     var contractLink = Provider.of<ContractLinking>(context, listen: false);
-
+/*
     List<int> list = utf8.encode(uid);
     Uint8List bytes = Uint8List.fromList(list);
 
     List<int> list2 = utf8.encode(canid);
     Uint8List bytes2 = Uint8List.fromList(list2);
-
-    await contractLink.registerVoter(bytes, bytes2);
+*/
+    await contractLink.registerVoter(uid, canid);
   }
 
   getData(context, String canid) async {
@@ -75,8 +69,8 @@ class Voteui extends StatelessWidget {
     BigInt jj = BigInt.parse(canid);
 
     var cans = await contractLink.getCandidate(jj);
-    print(cans);
-
+    //var canss = cans.toString();
     // ignore: avoid_print
+    print(cans);
   }
 }

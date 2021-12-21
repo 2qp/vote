@@ -1,6 +1,4 @@
 import 'dart:convert';
-import 'dart:ffi';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -12,7 +10,7 @@ class ContractLinking extends ChangeNotifier {
   final String _rpcUrl = "http://127.0.0.1:7545";
   final String _wsUrl = "ws://127.0.0.1:7545/";
   final String _privateKey =
-      "b8be2fee48d254207dec8435a0054e7f223f7234b2e6c5e5dce5ecfd68d4a402";
+      "b38cb2f3de277bff64273e8729b3a3d8cd958ea290d0ca6852508c70e83198b9";
   late EthereumAddress owner;
 
   late Web3Client _client;
@@ -23,7 +21,6 @@ class ContractLinking extends ChangeNotifier {
   late EthereumAddress _contractAddress;
 
   late DeployedContract _contract;
-  late ContractFunction _voting;
   late ContractFunction _addCandidate;
   late ContractFunction _voteFunc;
   late ContractFunction _totalVotes;
@@ -73,7 +70,7 @@ class ContractLinking extends ChangeNotifier {
     _getCandidate = _contract.function("getCandidate");
   }
 
-  registerVoter(Uint8List name, Uint8List party) async {
+  registerVoter(String name, String party) async {
     isLoading = true;
     notifyListeners();
     await _client.sendTransaction(
@@ -83,6 +80,7 @@ class ContractLinking extends ChangeNotifier {
             function: _addCandidate,
             parameters: [name, party]));
     getNumOfCandidates();
+    // ignore: avoid_print
     print("Voter Registered $name");
   }
 

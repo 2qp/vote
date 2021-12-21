@@ -26,8 +26,8 @@ contract Ballot {
     }
     // describes a Candidate
     struct Candidate {
-        bytes32 name;
-        bytes32 party;
+        string name;
+        string party;
         // "bool doesExist" is to check if this Struct exists
         // This is so we can keep track of the candidates 
         bool doesExist;
@@ -50,25 +50,25 @@ contract Ballot {
      *  These functions perform transactions, editing the mappings *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-    function addCandidate(bytes32 name, bytes32 party) onlyOwner public {
+    function addCandidate(string memory name, string memory party) onlyOwner public {
         // candidateID is the return variable
         uint candidateID = numCandidates++;
         // Create new Candidate Struct with name and saves it to storage.
-        candidates[candidateID] = Candidate(name, party, true);
+        candidates[candidateID] = Candidate(name,party,true);
         emit AddedCandidate(candidateID);
     }
 
-    function vote(bytes32 uid, uint candidateID) public {
+    function vote(string memory uid, uint candidateID) public {
         // checks if the struct exists for that candidate
         if (candidates[candidateID].doesExist == true) {
             uint voterID = numVoters++;
             //voterID is the return variable
-            voters[voterID] = Voter(uid, candidateID);
+            voters[voterID] = Voter( bytes32(bytes(uid)), candidateID);
         }
     }
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * 
-     *  Getter Functions, marked by the key word "view" *
+     *  Getter Functions *
      * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 
@@ -94,7 +94,7 @@ contract Ballot {
         return numVoters;
     }
     // returns candidate information, including its ID, name, and party
-    function getCandidate(uint candidateID) public view returns (uint, bytes32, bytes32) {
+    function getCandidate(uint candidateID) public view returns (uint, string memory, string memory) {
         return (candidateID, candidates[candidateID].name, candidates[candidateID].party);
     }
 }
