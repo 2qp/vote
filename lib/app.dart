@@ -24,7 +24,8 @@ class App extends StatelessWidget {
           GlobalCupertinoLocalizations.delegate,
         ],
         supportedLocales: S.delegate.supportedLocales,
-        theme: ThemeData(brightness: Brightness.dark),
+        theme:
+            ThemeData(brightness: Brightness.dark, primaryColor: Colors.black),
         home: const Voteui(),
       ),
     );

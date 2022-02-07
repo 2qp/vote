@@ -14,38 +14,127 @@ class Voteui extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text("Vote")),
+      backgroundColor: Colors.black,
       body: Center(
-        child: Column(
-          children: <Widget>[
-            TextField(
-              controller: uid,
-              decoration: const InputDecoration(hintText: "User ID"),
-            ),
-            TextField(
-              controller: canid,
-              decoration: const InputDecoration(hintText: "Candidate ID"),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: ElevatedButton(
-                onPressed: () async {
-                  inputData(context, uid.text, canid.text);
-                  //contractLink.registerVoter(Parse, canid.text);
-                },
-                child: const Text('Save Data'),
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              TextField(
+                controller: uid,
+                decoration: const InputDecoration(
+                  hintText: "User ID",
+                  border: OutlineInputBorder(),
+                  suffixIcon: Icon(
+                    Icons.check_circle,
+                  ),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFF6200EE)),
+                  ),
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: ElevatedButton(
-                onPressed: () async {
-                  getData(context, canid.text);
-                  //contractLink.registerVoter(Parse, canid.text);
-                },
-                child: const Text('Get Candidates Data'),
+              TextField(
+                controller: canid,
+                decoration: const InputDecoration(
+                  hintText: "Candidate ID",
+                  border: OutlineInputBorder(),
+                  suffixIcon: Icon(
+                    Icons.check_circle,
+                  ),
+                  enabledBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: Color(0xFF6200EE)),
+                  ),
+                ),
               ),
-            )
-          ],
+              Padding(
+                padding: const EdgeInsets.all(50.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    // padding: const EdgeInsets.all(20.0),
+                    OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        primary: Colors.black,
+                        backgroundColor: Colors.white,
+                      ),
+                      onPressed: () async {
+                        inputData(context, uid.text, canid.text);
+                        //contractLink.registerVoter(Parse, canid.text);
+                      },
+                      child: const Text('Save Data'),
+                    ),
+                    const SizedBox(
+                      height: 10.0,
+                    ),
+
+                    // candidate data
+
+                    ElevatedButton(
+                      style: OutlinedButton.styleFrom(
+                        primary: Colors.black,
+                        backgroundColor: Colors.white,
+                      ),
+                      onPressed: () async {
+                        getData(context, canid.text);
+                        //contractLink.registerVoter(Parse, canid.text);
+                      },
+                      child: const Text('Get Candidates Data'),
+                    ),
+
+                    // vote
+                    const SizedBox(
+                      height: 10.0,
+                    ),
+                    ElevatedButton(
+                      style: OutlinedButton.styleFrom(
+                        primary: Colors.black,
+                        backgroundColor: Colors.white,
+                      ),
+                      onPressed: () async {
+                        vote(context, uid.text, canid.text);
+                        //contractLink.registerVoter(Parse, canid.text);
+                      },
+                      child: const Text('Vote'),
+                    ),
+
+                    // vote
+                    const SizedBox(
+                      height: 10.0,
+                    ),
+                    ElevatedButton(
+                      style: OutlinedButton.styleFrom(
+                        primary: Colors.black,
+                        backgroundColor: Colors.white,
+                      ),
+                      onPressed: () async {
+                        result(context, canid.text);
+                        //contractLink.registerVoter(Parse, canid.text);
+                      },
+                      child: const Text('Result'),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                //width: 450,
+                child: TextField(
+                    controller: contractLink.txt,
+                    readOnly: true,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Output',
+                    ),
+                    style: const TextStyle(
+                      fontSize: 25.0,
+                      height: 2.0,
+                      color: Colors.white,
+                      fontFamily: 'JetsMono',
+                    )),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -53,24 +142,38 @@ class Voteui extends StatelessWidget {
 
   void inputData(context, String uid, String canid) async {
     var contractLink = Provider.of<ContractLinking>(context, listen: false);
-/*
-    List<int> list = utf8.encode(uid);
-    Uint8List bytes = Uint8List.fromList(list);
 
-    List<int> list2 = utf8.encode(canid);
-    Uint8List bytes2 = Uint8List.fromList(list2);
-*/
     await contractLink.registerVoter(uid, canid);
   }
 
-  getData(context, String canid) async {
+  void getData(context, String canid) async {
     var contractLink = Provider.of<ContractLinking>(context, listen: false);
 
     BigInt jj = BigInt.parse(canid);
 
     var cans = await contractLink.getCandidate(jj);
-    //var canss = cans.toString();
+
     // ignore: avoid_print
     print(cans);
+
+    contractLink.txt.text = cans;
+  }
+
+  void vote(context, String text, String text2) async {
+    var contractLink = Provider.of<ContractLinking>(context, listen: false);
+
+    BigInt can2 = BigInt.parse(text2);
+
+    var letsvote = await contractLink.vote(text, can2);
+    print(letsvote);
+    //contractLink.txt.text = letsvote;
+  }
+
+  void result(BuildContext context, String text) async {
+    var contractLink = Provider.of<ContractLinking>(context, listen: false);
+    BigInt jj = BigInt.parse(text);
+    var results = await contractLink.totalVotes(jj);
+    contractLink.txt.text = "Total Votes : $results";
+    print(results);
   }
 }
