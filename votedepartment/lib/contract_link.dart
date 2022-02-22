@@ -10,7 +10,7 @@ class ContractLinking extends ChangeNotifier {
   final String _rpcUrl = "http://127.0.0.1:7545";
   final String _wsUrl = "ws://127.0.0.1:7545/";
   final String _privateKey =
-      "ef20e5d2ac1620162223744507e18e957291acf508a1cc8b3c404c192664ab5e";
+      "031a83a5b699b4c144d494cb4aae3ac02cf92a5703311450aa77012e259a5b98";
   late EthereumAddress owner;
 
   late Web3Client _client;
@@ -86,19 +86,6 @@ class ContractLinking extends ChangeNotifier {
     getNumOfCandidates();
     // ignore: avoid_print
     print("Voter Registered $name");
-  }
-
-  // voting.app
-  vote(String uid, BigInt candidateID) async {
-    isLoading = true;
-    notifyListeners();
-    await _client.sendTransaction(
-        _credentials,
-        Transaction.callContract(
-            contract: _contract,
-            function: _voteFunc,
-            parameters: [(uid), candidateID]));
-    //getChairperson();
   }
 
   getNumOfCandidates() async {

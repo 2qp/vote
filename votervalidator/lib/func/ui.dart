@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'addVoters.dart';
+import 'contract_link.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 
 class MainUi extends StatelessWidget {
   const MainUi({Key? key, required this.uid}) : super(key: key);
@@ -9,6 +11,7 @@ class MainUi extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var fire = Provider.of<AddUser>(context);
+    var contractLink = Provider.of<ContractLinking>(context, listen: false);
     print(uid);
     TextEditingController fn = TextEditingController();
     TextEditingController co = TextEditingController();
@@ -83,6 +86,18 @@ class MainUi extends StatelessWidget {
                       },
                       child: const Text('Save Data'),
                     ),
+                    // contract test
+                    OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        primary: Colors.black,
+                        backgroundColor: Colors.white,
+                      ),
+                      onPressed: () async {
+                        result(context, age.text);
+                        //contractLink.registerVoter(Parse, canid.text);
+                      },
+                      child: const Text('Test Contract'),
+                    ),
                     const SizedBox(
                       height: 10.0,
                     ),
@@ -99,7 +114,19 @@ class MainUi extends StatelessWidget {
   }
 
   void inputData(context, String uid, String canid, String text) async {
+// uid
+    var uuid = const Uuid();
+    String rid = uuid.v1();
+
+// firebase
     var fire = Provider.of<AddUser>(context, listen: false);
-    await fire.addUser(uid, canid, text);
+    await fire.addUser(uid, canid, text, rid);
+
+// contarct
+    var contractLink = Provider.of<ContractLinking>(context, listen: false);
+
+    await contractLink.votervalid(rid);
   }
+
+  void result(context, String rid) async {}
 }

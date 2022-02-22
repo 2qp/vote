@@ -2,11 +2,13 @@ import 'package:provider/provider.dart';
 import 'package:vote/generated/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:vote/func/msg.dart';
 
 //import 'screens/home/home.dart';
 import 'contract_linking.dart';
 
 import 'vote.dart';
+import 'package:vote/ui/validateui.dart';
 
 class App extends StatelessWidget {
   const App({Key? key}) : super(key: key);
@@ -16,6 +18,7 @@ class App extends StatelessWidget {
     return ChangeNotifierProvider<ContractLinking>(
       create: (_) => ContractLinking(),
       child: MaterialApp(
+        scaffoldMessengerKey: snackbarKey,
         locale: const Locale('ta'),
         localizationsDelegates: const [
           S.delegate,

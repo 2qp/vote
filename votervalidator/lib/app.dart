@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 // import 'package:votervalidator/func/ui.dart';
 import 'package:provider/provider.dart';
 import 'package:votervalidator/func/addVoters.dart';
+import 'package:votervalidator/func/contract_link.dart';
 
 import 'package:votervalidator/func/msg.dart';
 import 'package:votervalidator/splash.dart';
@@ -12,8 +13,11 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<AddUser>(
-      create: (_) => AddUser(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => AddUser()),
+        ChangeNotifierProvider(create: (context) => ContractLinking()),
+      ],
       child: MaterialApp(
         scaffoldMessengerKey: snackbarKey,
         theme:
