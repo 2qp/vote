@@ -42,17 +42,17 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions web = FirebaseOptions(
     apiKey: 'AIzaSyB9Bl53X5ZoeWnyfh2wPcOKf8YxjDpM1Ic',
-    appId: '1:698106067593:web:eabdf5ef6325ba67e3e458',
+    appId: '1:698106067593:web:d961e98549849027e3e458',
     messagingSenderId: '698106067593',
     projectId: 'votechains',
     authDomain: 'votechains.firebaseapp.com',
     storageBucket: 'votechains.appspot.com',
-    measurementId: 'G-M71HVL30G3',
+    measurementId: 'G-5EKLSVGP7C',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyDpAG0_mG0prZc4XIIv1F01zmx3dQ3iGak',
-    appId: '1:698106067593:android:07c776e96d25e598e3e458',
+    appId: '1:698106067593:android:291d895ebd5b39e5e3e458',
     messagingSenderId: '698106067593',
     projectId: 'votechains',
     storageBucket: 'votechains.appspot.com',

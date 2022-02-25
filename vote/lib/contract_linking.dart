@@ -10,28 +10,19 @@ class ContractLinking extends ChangeNotifier {
   final String _rpcUrl = "http://127.0.0.1:7545";
   final String _wsUrl = "ws://127.0.0.1:7545/";
   final String _privateKey =
-      "ef20e5d2ac1620162223744507e18e957291acf508a1cc8b3c404c192664ab5e";
+      "63090bb895cbae18833103bbdf2b35935e95a94d9fb87861a4950e3482566b0c";
   late EthereumAddress owner;
 
   late Web3Client _client;
   late String _abiCode;
-
   late Credentials _credentials;
-
   late EthereumAddress _contractAddress;
-
   late DeployedContract _contract;
-  late ContractFunction _addCandidate;
+
   late ContractFunction _voteFunc;
-  late ContractFunction _totalVotes;
-  late ContractFunction _numOfCandidates;
   late ContractFunction _numOfVoters;
-  late ContractFunction _getCandidate;
 
   bool isLoading = true;
-
-  // temp
-  var txt = TextEditingController();
 
   ContractLinking() {
     inititalSetup();
@@ -44,7 +35,6 @@ class ContractLinking extends ChangeNotifier {
     await getAbi();
     await getCredentials();
     await getDeployedContract();
-    //await voting();
   }
 
   getAbi() async {
@@ -65,31 +55,12 @@ class ContractLinking extends ChangeNotifier {
     _contract = DeployedContract(
         ContractAbi.fromJson(_abiCode, "Ballot"), _contractAddress);
 
-    _addCandidate = _contract.function("addCandidate");
     _voteFunc = _contract.function("vote");
-    _totalVotes = _contract.function("totalVotes");
-    _numOfCandidates = _contract.function("getNumOfCandidates");
     _numOfVoters = _contract.function("getNumOfVoters");
-    _getCandidate = _contract.function("getCandidate");
   }
 
-  // dep.app
-  registerVoter(String name, String party) async {
-    isLoading = true;
-    notifyListeners();
-    await _client.sendTransaction(
-        _credentials,
-        Transaction.callContract(
-            contract: _contract,
-            function: _addCandidate,
-            parameters: [name, party]));
-    getNumOfCandidates();
-    // ignore: avoid_print
-    print("Voter Registered $name");
-  }
-
-  // voting.app
-  vote(String uid, BigInt candidateID) async {
+  // voting
+  vote(BigInt candidateID, String rid) async {
     isLoading = true;
     notifyListeners();
     await _client.sendTransaction(
@@ -97,54 +68,14 @@ class ContractLinking extends ChangeNotifier {
         Transaction.callContract(
             contract: _contract,
             function: _voteFunc,
-            parameters: [(uid), candidateID]));
-    //getChairperson();
+            parameters: [candidateID, rid]));
   }
 
-  getNumOfCandidates() async {
-    notifyListeners();
-    await _client.sendTransaction(
-        _credentials,
-        Transaction.callContract(
-            contract: _contract, function: _numOfCandidates, parameters: []));
-  }
-
-  // dep.app
+  // sub contract
   getNumOfVoters() async {
     notifyListeners();
-    await _client.sendTransaction(
-        _credentials,
-        Transaction.callContract(
-            contract: _contract, function: _numOfVoters, parameters: []));
-  }
-
-  getCandidate(BigInt candidateID) async {
-    notifyListeners();
-    //var candida = await _client.sendTransaction(
-    //  _credentials,
-    //  Transaction.callContract(
-    //      contract: _contract,
-    //       function: _getCandidate,
-    //      parameters: [candidateID]));
-
-    var candidates = await _client.call(
-        contract: _contract, function: _getCandidate, params: [candidateID]);
-    return "$candidates";
-  }
-
-  // depp and public
-  totalVotes(BigInt candidateID) async {
-    notifyListeners();
-
-    var tvotes = await _client.call(
-        contract: _contract, function: _totalVotes, params: [candidateID]);
-    return "$tvotes";
-  }
-
-  // depp and public
-  winner() async {
-    var numOfVotes = await _client
-        .call(contract: _contract, function: _totalVotes, params: []);
-    return numOfVotes;
+    var noc = await _client
+        .call(contract: _contract, function: _numOfVoters, params: []);
+    return "$noc";
   }
 }

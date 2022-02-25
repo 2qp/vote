@@ -3,6 +3,8 @@ import 'addVoters.dart';
 import 'contract_link.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'msg.dart';
 
 class MainUi extends StatelessWidget {
   const MainUi({Key? key, required this.uid}) : super(key: key);
@@ -13,9 +15,7 @@ class MainUi extends StatelessWidget {
     var fire = Provider.of<AddUser>(context);
     var contractLink = Provider.of<ContractLinking>(context, listen: false);
     print(uid);
-    TextEditingController fn = TextEditingController();
-    TextEditingController co = TextEditingController();
-    TextEditingController age = TextEditingController();
+    TextEditingController id = TextEditingController();
 
     return Scaffold(
       appBar: AppBar(
@@ -30,35 +30,9 @@ class MainUi extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               TextField(
-                controller: fn,
+                controller: id,
                 decoration: const InputDecoration(
-                  hintText: "name ID",
-                  border: OutlineInputBorder(),
-                  suffixIcon: Icon(
-                    Icons.check_circle,
-                  ),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFF6200EE)),
-                  ),
-                ),
-              ),
-              TextField(
-                controller: co,
-                decoration: const InputDecoration(
-                  hintText: "compamy",
-                  border: OutlineInputBorder(),
-                  suffixIcon: Icon(
-                    Icons.check_circle,
-                  ),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFF6200EE)),
-                  ),
-                ),
-              ),
-              TextField(
-                controller: age,
-                decoration: const InputDecoration(
-                  hintText: "age",
+                  hintText: "NIC",
                   border: OutlineInputBorder(),
                   suffixIcon: Icon(
                     Icons.check_circle,
@@ -81,23 +55,25 @@ class MainUi extends StatelessWidget {
                         backgroundColor: Colors.white,
                       ),
                       onPressed: () async {
-                        inputData(context, fn.text, co.text, age.text);
+                        inputData(context, id.text);
                         //contractLink.registerVoter(Parse, canid.text);
                       },
                       child: const Text('Save Data'),
                     ),
-                    // contract test
+                    // test btn
                     OutlinedButton(
                       style: OutlinedButton.styleFrom(
                         primary: Colors.black,
                         backgroundColor: Colors.white,
                       ),
                       onPressed: () async {
-                        result(context, age.text);
+                        returnMap(context, id.text);
                         //contractLink.registerVoter(Parse, canid.text);
                       },
-                      child: const Text('Test Contract'),
+                      child: const Text('Return Data'),
                     ),
+                    // test btn end
+
                     const SizedBox(
                       height: 10.0,
                     ),
@@ -113,20 +89,39 @@ class MainUi extends StatelessWidget {
     );
   }
 
-  void inputData(context, String uid, String canid, String text) async {
-// uid
+  void inputData(context, String id) async {
+    // firestore instance
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    // uid gen
     var uuid = const Uuid();
     String rid = uuid.v1();
 
-// firebase
-    var fire = Provider.of<AddUser>(context, listen: false);
-    await fire.addUser(uid, canid, text, rid);
+    // validations
+    final QuerySnapshot result = await firestore
+        .collection('users')
+        .where('nic', isEqualTo: id)
+        .limit(1)
+        .get();
+    final List<DocumentSnapshot> documents = result.docs;
+    if (documents.length == 1) {
+      showsnak("Id Already Used");
+    } else {
+      showsnak("lessgoo");
 
-// contarct
-    var contractLink = Provider.of<ContractLinking>(context, listen: false);
+      // firebase
+      var fire = Provider.of<AddUser>(context, listen: false);
+      await fire.addUser(id, rid);
 
-    await contractLink.votervalid(rid);
+      // contract
+      var contractLink = Provider.of<ContractLinking>(context, listen: false);
+      await contractLink.votervalid(rid);
+    }
   }
 
-  void result(context, String rid) async {}
+  void returnMap(BuildContext context, String text) async {
+    var contractLink = Provider.of<ContractLinking>(context, listen: false);
+    var results = await contractLink.keyreturns(text);
+    print(results);
+  }
 }

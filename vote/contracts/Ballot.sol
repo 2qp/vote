@@ -9,6 +9,7 @@ contract Ballot {
     // to vote for the candidate, since it is one of arguments for the function "vote")
     event AddedCandidate(uint candidateID);
     event AddedEntry(string rid);
+    event Error(string rid);
 
     // describes a Voter, which has an id and the ID of the candidate they voted for
     address owner;
@@ -22,7 +23,6 @@ contract Ballot {
         _;
     }
     struct Voter {
-        bytes32 uid; // bytes32 type are basically strings
         uint candidateIDVote;
     }
     // describes a Candidate
@@ -51,7 +51,7 @@ contract Ballot {
     // These mappings will hold all the candidates and Voters respectively
     mapping(uint => Candidate) candidates;
     mapping(uint => Voter) voters;
-    mapping(string => Anon) anony;
+    mapping(string => bool) anony;
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      *  These functions perform transactions, editing the mappings *
@@ -59,7 +59,7 @@ contract Ballot {
     // 4da Validations
     function entry(string memory rid) onlyOwner public {
         
-        anony[rid] = Anon(rid,false);
+        anony[rid] = (false);
         emit AddedEntry(rid);
     }
 
@@ -72,14 +72,17 @@ contract Ballot {
         emit AddedCandidate(candidateID);
     }
 
-    function vote(string memory uid, uint candidateID, string memory rid) public {
+    function vote(uint candidateID, string memory rid) public {
         // checks if the struct exists for that candidate
-        if (candidates[candidateID].doesExist == true && anony[rid].voted == false) {
+        if (candidates[candidateID].doesExist == true && anony[rid] == false ) {
             uint voterID = numVoters++;
             //voterID is the return variable
-            voters[voterID] = Voter( bytes32(bytes(uid)), candidateID);
+            voters[voterID] = Voter(candidateID);
             // set
-            anony[rid].voted = true; 
+            anony[rid] = true; 
+        }
+        else {
+            emit Error(rid);
         }
     }
 
@@ -113,4 +116,8 @@ contract Ballot {
     function getCandidate(uint candidateID) public view returns (uint, string memory, string memory) {
         return (candidateID, candidates[candidateID].name, candidates[candidateID].party);
     }
+
+    function returnMappingValue(string memory rid) public view returns ( bool) {
+        return (anony[rid]);
+    }  
 }

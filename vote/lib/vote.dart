@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'contract_linking.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'func/msg.dart';
 
 class Voteui extends StatelessWidget {
   const Voteui({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    var contractLink = Provider.of<ContractLinking>(context);
-    TextEditingController uid = TextEditingController();
+    TextEditingController userid = TextEditingController();
+
     TextEditingController canid = TextEditingController();
 
     return Scaffold(
@@ -21,10 +23,11 @@ class Voteui extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
+              // user id field
               TextField(
-                controller: uid,
+                controller: userid,
                 decoration: const InputDecoration(
-                  hintText: "User ID",
+                  hintText: "NIC ID",
                   border: OutlineInputBorder(),
                   suffixIcon: Icon(
                     Icons.check_circle,
@@ -34,6 +37,7 @@ class Voteui extends StatelessWidget {
                   ),
                 ),
               ),
+              // user id field  end
               TextField(
                 controller: canid,
                 decoration: const InputDecoration(
@@ -53,85 +57,18 @@ class Voteui extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    // padding: const EdgeInsets.all(20.0),
-                    OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        primary: Colors.black,
-                        backgroundColor: Colors.white,
-                      ),
-                      onPressed: () async {
-                        inputData(context, uid.text, canid.text);
-                        //contractLink.registerVoter(Parse, canid.text);
-                      },
-                      child: const Text('Save Data'),
-                    ),
-                    const SizedBox(
-                      height: 10.0,
-                    ),
-
-                    // candidate data
-
                     ElevatedButton(
                       style: OutlinedButton.styleFrom(
                         primary: Colors.black,
                         backgroundColor: Colors.white,
                       ),
                       onPressed: () async {
-                        getData(context, canid.text);
-                        //contractLink.registerVoter(Parse, canid.text);
-                      },
-                      child: const Text('Get Candidates Data'),
-                    ),
-
-                    // vote
-                    const SizedBox(
-                      height: 10.0,
-                    ),
-                    ElevatedButton(
-                      style: OutlinedButton.styleFrom(
-                        primary: Colors.black,
-                        backgroundColor: Colors.white,
-                      ),
-                      onPressed: () async {
-                        vote(context, uid.text, canid.text);
-                        //contractLink.registerVoter(Parse, canid.text);
+                        vote(context, userid.text, canid.text);
                       },
                       child: const Text('Vote'),
                     ),
-
-                    // vote
-                    const SizedBox(
-                      height: 10.0,
-                    ),
-                    ElevatedButton(
-                      style: OutlinedButton.styleFrom(
-                        primary: Colors.black,
-                        backgroundColor: Colors.white,
-                      ),
-                      onPressed: () async {
-                        result(context, canid.text);
-                        //contractLink.registerVoter(Parse, canid.text);
-                      },
-                      child: const Text('Result'),
-                    ),
                   ],
                 ),
-              ),
-              SizedBox(
-                //width: 450,
-                child: TextField(
-                    controller: contractLink.txt,
-                    readOnly: true,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: 'Output',
-                    ),
-                    style: const TextStyle(
-                      fontSize: 25.0,
-                      height: 2.0,
-                      color: Colors.white,
-                      fontFamily: 'JetsMono',
-                    )),
               ),
             ],
           ),
@@ -140,40 +77,29 @@ class Voteui extends StatelessWidget {
     );
   }
 
-  void inputData(context, String uid, String canid) async {
-    var contractLink = Provider.of<ContractLinking>(context, listen: false);
-
-    await contractLink.registerVoter(uid, canid);
-  }
-
-  void getData(context, String canid) async {
-    var contractLink = Provider.of<ContractLinking>(context, listen: false);
-
-    BigInt jj = BigInt.parse(canid);
-
-    var cans = await contractLink.getCandidate(jj);
-
-    // ignore: avoid_print
-    print(cans);
-
-    contractLink.txt.text = cans;
-  }
-
-  void vote(context, String text, String text2) async {
+  void vote(context, String text1, String text2) async {
     var contractLink = Provider.of<ContractLinking>(context, listen: false);
 
     BigInt can2 = BigInt.parse(text2);
 
-    var letsvote = await contractLink.vote(text, can2);
-    print(letsvote);
-    //contractLink.txt.text = letsvote;
-  }
+    // firestore
 
-  void result(BuildContext context, String text) async {
-    var contractLink = Provider.of<ContractLinking>(context, listen: false);
-    BigInt jj = BigInt.parse(text);
-    var results = await contractLink.totalVotes(jj);
-    contractLink.txt.text = "Total Votes : $results";
-    print(results);
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+    final QuerySnapshot result = await firestore
+        .collection('users')
+        .where('nic', isEqualTo: text1)
+        .limit(1)
+        .get();
+    final List<DocumentSnapshot> documents = result.docs;
+    if (documents.length == 1) {
+      String ff = documents.first.get('rid');
+      var letsvote = await contractLink.vote(can2, ff);
+      showsnak("Vote Casted");
+      // ignore: avoid_print
+      print(letsvote);
+    } else {
+      showsnak("No ID Registered");
+    }
   }
 }

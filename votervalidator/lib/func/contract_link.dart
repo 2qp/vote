@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
@@ -10,7 +9,7 @@ class ContractLinking extends ChangeNotifier {
   final String _rpcUrl = "http://127.0.0.1:7545";
   final String _wsUrl = "ws://127.0.0.1:7545/";
   final String _privateKey =
-      "ef20e5d2ac1620162223744507e18e957291acf508a1cc8b3c404c192664ab5e";
+      "63090bb895cbae18833103bbdf2b35935e95a94d9fb87861a4950e3482566b0c";
   late EthereumAddress owner;
 
   late Web3Client _client;
@@ -22,6 +21,7 @@ class ContractLinking extends ChangeNotifier {
 
   late DeployedContract _contract;
   late ContractFunction _entry;
+  late ContractFunction _returnMappingValue;
 
   bool isLoading = true;
 
@@ -61,6 +61,7 @@ class ContractLinking extends ChangeNotifier {
         ContractAbi.fromJson(_abiCode, "Ballot"), _contractAddress);
 
     _entry = _contract.function("entry");
+    _returnMappingValue = _contract.function("returnMappingValue");
   }
 
   // dep.app
@@ -73,5 +74,13 @@ class ContractLinking extends ChangeNotifier {
             contract: _contract, function: _entry, parameters: [rid]));
     // ignore: avoid_print
     print("Voter Registered $rid");
+  }
+
+  keyreturns(String rid) async {
+    notifyListeners();
+
+    var tvotes = await _client.call(
+        contract: _contract, function: _returnMappingValue, params: [rid]);
+    return "$tvotes";
   }
 }
