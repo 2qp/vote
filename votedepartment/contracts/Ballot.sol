@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.13;
 // written for Solidity version 0.4.18 and above that doesnt break functionality
 
 contract Ballot {

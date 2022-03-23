@@ -1,57 +1,39 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:votedepartment/func/signup.dart';
 
-// func
-import 'package:votervalidator/func/ui.dart';
-
-// msg
-import '../func/msg.dart';
-
-FirebaseAuth auth = FirebaseAuth.instance;
-
-class Login extends StatelessWidget {
-  const Login({Key? key}) : super(key: key);
+class Sign extends StatelessWidget {
+  const Sign({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    TextEditingController email = TextEditingController();
+    TextEditingController username = TextEditingController();
     TextEditingController password = TextEditingController();
-    return Scaffold(
-        //backgroundColor: Colors.black,
-        body: Center(
+    return Center(
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
             TextField(
-              controller: email,
+              controller: username,
               decoration: const InputDecoration(
-                hintText: "Email",
+                hintText: "NIC",
                 border: OutlineInputBorder(),
                 suffixIcon: Icon(
                   Icons.check_circle,
                 ),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xFF6200EE)),
-                ),
               ),
             ),
-            // pw
             TextField(
               controller: password,
-              obscureText: true,
               decoration: const InputDecoration(
-                hintText: "password",
+                hintText: "NIC",
                 border: OutlineInputBorder(),
                 suffixIcon: Icon(
                   Icons.check_circle,
                 ),
-                enabledBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xFF6200EE)),
-                ),
               ),
             ),
-            // btn
             Padding(
               padding: const EdgeInsets.all(50.0),
               child: Column(
@@ -65,11 +47,12 @@ class Login extends StatelessWidget {
                       backgroundColor: Colors.white,
                     ),
                     onPressed: () async {
-                      inputData(context, email.text, password.text);
+                      reg(context, username.text, password.text);
                       //contractLink.registerVoter(Parse, canid.text);
                     },
-                    child: const Text('Login'),
+                    child: const Text('Register'),
                   ),
+
                   const SizedBox(
                     height: 10.0,
                   ),
@@ -81,26 +64,12 @@ class Login extends StatelessWidget {
           ],
         ),
       ),
-    ));
+    );
   }
+}
 
-  void inputData(BuildContext context, String text, String text2) async {
-    try {
-      FirebaseAuth.instance
-          .signInWithEmailAndPassword(email: text, password: text2)
-          .then((result) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-              builder: (context) => MainUi(uid: result.user!.uid)),
-        );
-      });
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'user-not-found') {
-        showsnak('No user found for that email.');
-      } else if (e.code == 'wrong-password') {
-        showsnak('Wrong password provided for that user.');
-      }
-    }
-  }
+void reg(BuildContext context, String email, String pass) async {
+  final auth = Auth();
+
+  await auth.sign(email, pass);
 }

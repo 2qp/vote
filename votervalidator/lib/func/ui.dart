@@ -1,10 +1,21 @@
+import 'dart:typed_data';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid_util.dart';
 import 'addVoters.dart';
 import 'contract_link.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+// notifier
 import 'msg.dart';
+
+// db schema
+import 'package:votervalidator/db/db.dart';
+
+// claim checker
+import 'package:firebase_auth/firebase_auth.dart';
 
 class MainUi extends StatelessWidget {
   const MainUi({Key? key, required this.uid}) : super(key: key);
@@ -58,21 +69,21 @@ class MainUi extends StatelessWidget {
                         inputData(context, id.text);
                         //contractLink.registerVoter(Parse, canid.text);
                       },
-                      child: const Text('Save Data'),
+                      child: const Text('Register'),
                     ),
-                    // test btn
+
+                    // claim checker btn
                     OutlinedButton(
                       style: OutlinedButton.styleFrom(
                         primary: Colors.black,
                         backgroundColor: Colors.white,
                       ),
                       onPressed: () async {
-                        returnMap(context, id.text);
+                        checkData(context);
                         //contractLink.registerVoter(Parse, canid.text);
                       },
-                      child: const Text('Return Data'),
+                      child: const Text('Register'),
                     ),
-                    // test btn end
 
                     const SizedBox(
                       height: 10.0,
@@ -91,29 +102,25 @@ class MainUi extends StatelessWidget {
 
   void inputData(context, String id) async {
     // firestore instance
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    final db = DatabaseService();
 
-    // uid gen
+    // KeyGen
+    // String rid = UuidUtil.cryptoRNG().toString();
+    //print(rid);
     var uuid = const Uuid();
     String rid = uuid.v1();
 
     // validations
-    final QuerySnapshot result = await firestore
-        .collection('users')
-        .where('nic', isEqualTo: id)
-        .limit(1)
-        .get();
-    final List<DocumentSnapshot> documents = result.docs;
+    final documents = await db.isAlreadyExist(id);
     if (documents.length == 1) {
-      showsnak("Id Already Used");
+      showsnak("NIC already used !");
     } else {
-      showsnak("lessgoo");
+      showsnak("Success");
 
-      // firebase
-      var fire = Provider.of<AddUser>(context, listen: false);
-      await fire.addUser(id, rid);
+      await db.addVoter(id, rid);
 
       // contract
+      String gg = "ff";
       var contractLink = Provider.of<ContractLinking>(context, listen: false);
       await contractLink.votervalid(rid);
     }
@@ -124,4 +131,11 @@ class MainUi extends StatelessWidget {
     var results = await contractLink.keyreturns(text);
     print(results);
   }
+}
+
+void checkData(BuildContext context) async {
+  FirebaseAuth _auth = FirebaseAuth.instance;
+  final User? user = _auth.currentUser;
+  IdTokenResult idTokenResult = await (user!.getIdTokenResult());
+  print('claims : ${idTokenResult.claims}');
 }

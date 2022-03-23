@@ -6,10 +6,10 @@ import 'package:web3dart/web3dart.dart';
 import 'package:web_socket_channel/io.dart';
 
 class ContractLinking extends ChangeNotifier {
-  final String _rpcUrl = "http://127.0.0.1:7545";
-  final String _wsUrl = "ws://127.0.0.1:7545/";
+  final String _rpcUrl = "http://127.0.0.1:9545";
+  final String _wsUrl = "ws://127.0.0.1:9545/";
   final String _privateKey =
-      "63090bb895cbae18833103bbdf2b35935e95a94d9fb87861a4950e3482566b0c";
+      "f24161642669a8212ec4efe9b54fd0b4d95080b5c0ef7de462aca6526db1c188";
   late EthereumAddress owner;
 
   late Web3Client _client;

@@ -1,16 +1,17 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
-import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class ContractLinking extends ChangeNotifier {
   final String _rpcUrl = "http://127.0.0.1:7545";
   final String _wsUrl = "ws://127.0.0.1:7545/";
   final String _privateKey =
-      "63090bb895cbae18833103bbdf2b35935e95a94d9fb87861a4950e3482566b0c";
+      "f01399436262f577c713c8b4a5fba85e06ec922546f6ab54fd7cc3be360517e2";
   late EthereumAddress owner;
 
   late Web3Client _client;
@@ -28,6 +29,8 @@ class ContractLinking extends ChangeNotifier {
   late ContractFunction _numOfVoters;
   late ContractFunction _getCandidate;
 
+  late ContractEvent _returnCandidateID;
+
   bool isLoading = true;
 
   // temp
@@ -39,11 +42,12 @@ class ContractLinking extends ChangeNotifier {
 
   inititalSetup() async {
     _client = Web3Client(_rpcUrl, Client(), socketConnector: () {
-      return IOWebSocketChannel.connect(_wsUrl).cast<String>();
+      return WebSocketChannel.connect(Uri.parse(_wsUrl)).cast<String>();
     });
     await getAbi();
     await getCredentials();
     await getDeployedContract();
+
     //await voting();
   }
 
@@ -71,6 +75,7 @@ class ContractLinking extends ChangeNotifier {
     _numOfCandidates = _contract.function("getNumOfCandidates");
     _numOfVoters = _contract.function("getNumOfVoters");
     _getCandidate = _contract.function("getCandidate");
+    _returnCandidateID = _contract.event("AddedCandidate");
   }
 
   // dep.app
@@ -78,13 +83,14 @@ class ContractLinking extends ChangeNotifier {
     isLoading = true;
     notifyListeners();
     await _client.sendTransaction(
-        _credentials,
-        Transaction.callContract(
-            contract: _contract,
-            function: _addCandidate,
-            parameters: [name, party]));
+      _credentials,
+      Transaction.callContract(
+          from: owner,
+          contract: _contract,
+          function: _addCandidate,
+          parameters: [name, party]),
+    );
     getNumOfCandidates();
-    // ignore: avoid_print
     print("Voter Registered $name");
   }
 
@@ -113,9 +119,10 @@ class ContractLinking extends ChangeNotifier {
   getNumOfVoters() async {
     notifyListeners();
     await _client.sendTransaction(
-        _credentials,
-        Transaction.callContract(
-            contract: _contract, function: _numOfVoters, parameters: []));
+      _credentials,
+      Transaction.callContract(
+          contract: _contract, function: _numOfVoters, parameters: []),
+    );
   }
 
   getCandidate(BigInt candidateID) async {
@@ -146,5 +153,32 @@ class ContractLinking extends ChangeNotifier {
     var numOfVotes = await _client
         .call(contract: _contract, function: _totalVotes, params: []);
     return numOfVotes;
+  }
+/*
+  Future<BigInt> returnCandidateID() async {
+    
+    notifyListeners();
+    _client
+        .events(FilterOptions.events(
+            contract: _contract, event: _returnCandidateID))
+        .take(1)
+        .listen((event) {
+      final decoded =
+          _returnCandidateID.decodeResults(event.topics!, event.data ?? '');
+      final id = decoded[0] ?? '' as BigInt;
+      
+    });
+  } */
+
+  Future<BigInt> returnCandidateID() async {
+    notifyListeners();
+    final event = await _client
+        .events(FilterOptions.events(
+            contract: _contract, event: _returnCandidateID))
+        .first;
+    final decoded =
+        _returnCandidateID.decodeResults(event.topics!, event.data ?? '');
+    final id = decoded[0] ?? '' as BigInt;
+    return id;
   }
 }

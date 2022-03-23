@@ -10,7 +10,7 @@ class ContractLinking extends ChangeNotifier {
   final String _rpcUrl = "http://127.0.0.1:7545";
   final String _wsUrl = "ws://127.0.0.1:7545/";
   final String _privateKey =
-      "63090bb895cbae18833103bbdf2b35935e95a94d9fb87861a4950e3482566b0c";
+      "0x029983c7832e4150ffd2dcf8be5d7469a1d04b3b415ced897a5ac98e018a8245";
   late EthereumAddress owner;
 
   late Web3Client _client;

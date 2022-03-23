@@ -16,7 +16,7 @@ contracts_build_directory: "./src/artifacts/",
 // Configure your compilers
 compilers: {
   solc: {     
-    version: "^0.8.0",  // See the solidity docs for advice about optimization and evmVersion
+    version: "^0.8.13",  // See the solidity docs for advice about optimization and evmVersion
       optimizer: {
         enabled: true,
         runs: 200

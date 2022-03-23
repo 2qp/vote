@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:votedepartment/func/addCandidate.dart';
 
 import 'contract_link.dart';
 
@@ -13,7 +14,7 @@ class Voteui extends StatelessWidget {
     TextEditingController canid = TextEditingController();
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Vote")),
+      appBar: AppBar(title: const Text("Department")),
       backgroundColor: Colors.black,
       body: Center(
         child: Padding(
@@ -133,6 +134,11 @@ class Voteui extends StatelessWidget {
     var contractLink = Provider.of<ContractLinking>(context, listen: false);
 
     await contractLink.registerVoter(uid, canid);
+    BigInt gg = await contractLink.returnCandidateID();
+
+    // firebase add candidate id
+    var fire = Provider.of<AddCandidate>(context, listen: false);
+    await fire.addUser(gg.toInt(), uid, canid);
   }
 
   void getData(context, String canid) async {
