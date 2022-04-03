@@ -9,13 +9,14 @@ firestore.settings(settings);
 exports.Signup = functions.https.onCall(async (data) => {
   return admin
       .auth()
-      .setCustomUserClaims(data, {
+      .setCustomUserClaims(data.uid, {
         admin: false,
         isValidator: true,
       })
       .then(async () => {
-        await firestore.collection("Validators").doc(data).set({
+        await firestore.collection("Validators").doc(data.uid).set({
           createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          catId: data.id,
         });
       })
       .catch((error) => {

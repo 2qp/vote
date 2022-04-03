@@ -4,27 +4,43 @@ pragma solidity ^0.8.13;
 // written for Solidity version 0.4.18 and above that doesnt break functionality
 
 contract Ballot {
-    // an event that is called whenever a Candidate is added so the frontend could
-    // appropriately display the candidate with the right element id (it is used
-    // to vote for the candidate, since it is one of arguments for the function "vote")
+    // Events
     event AddedCandidate(uint candidateID);
-    event AddedEntry(string rid);
-    event Error(string rid);
+    event AddedEntry(string rid, uint id);
+    event Error(string error);
+
+    // States Events
+    event isCreated(bool cState);
+    event isVoting(bool cState);
+
+    event AddedCat(uint id, string name);
 
     // describes a Voter, which has an id and the ID of the candidate they voted for
     address owner;
 
     constructor ()  {
         owner = msg.sender;
-
+        state = State.Created;
+        emit isCreated(true);
+        emit isVoting(false);
     }
+
+    // modifiers
     modifier onlyOwner {
-       require(msg.sender == owner);
+        require(msg.sender == owner);
+        _;
+    }
+
+    modifier inState(State _state) {
+        require((state == _state));
         _;
     }
     struct Voter {
         uint candidateIDVote;
+        uint catid;
     }
+
+
     // describes a Candidate
     struct Candidate {
         string name;
@@ -34,15 +50,24 @@ contract Ballot {
         bool doesExist;
     }
 
-    struct Anon {
-        string rid;
-        bool voted;
+    // Categories
+    struct Cats {
+        string name;
+        uint count;
     }
+
+    // structfor vals
+    struct Anon {
+        bool voted;
+        uint id;
+    }
+
 
     // These state variables are used keep track of the number of Candidates/Voters 
     // and used to as a way to index them     
     uint numCandidates; // declares a state variable - number Of Candidates
     uint numVoters;
+    uint numCats;
 
 
     // Think of these as a hash table, with the key as a uint and value of 
@@ -51,38 +76,83 @@ contract Ballot {
     // These mappings will hold all the candidates and Voters respectively
     mapping(uint => Candidate) candidates;
     mapping(uint => Voter) voters;
-    mapping(string => bool) anony;
+    mapping(string => Anon) anony;
+    mapping(uint => Cats) cats;
+
+    // States
+    enum State {Created, Voting, Ended}
+    State public state;
+
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      *  These functions perform transactions, editing the mappings *
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
-    // 4da Validations
-    function entry(string memory rid) onlyOwner public {
-        
-        anony[rid] = (false);
-        emit AddedEntry(rid);
+
+    // 4da Validations / entry of category id
+    function entry(string memory rid, uint id) onlyOwner public
+    inState(State.Created)
+    {
+
+        anony[rid] = Anon(false, id);
+        emit AddedEntry(rid, id);
+    }
+
+    // state init for voting
+    function startVoting() onlyOwner public
+    inState(State.Created)
+    {
+        state = State.Voting;
+        emit isVoting(true);
+    }
+
+    // stop voting
+    function stopVoting() onlyOwner public
+    inState(State.Voting)
+    {
+        state = State.Ended;
+        emit isVoting(false);
     }
 
 
-    function addCandidate(string memory name, string memory party) onlyOwner public {
+    function addCandidate(string memory name, string memory party) onlyOwner public
+    inState(State.Created)
+    {
         // candidateID is the return variable
         uint candidateID = numCandidates++;
         // Create new Candidate Struct with name and saves it to storage.
-        candidates[candidateID] = Candidate(name,party,true);
+        candidates[candidateID] = Candidate(name, party, true);
         emit AddedCandidate(candidateID);
     }
 
-    function vote(uint candidateID, string memory rid) public {
+    function addCats(string memory name)
+    onlyOwner
+    public
+    inState(State.Created)
+    {
+        uint id = numCats++;
+        cats[id] = Cats(name, 0);
+        emit AddedCat(id, name);
+
+    }
+
+    function vote(uint candidateID, string memory rid) public
+    inState(State.Voting)
+    {
         // checks if the struct exists for that candidate
-        if (candidates[candidateID].doesExist == true && anony[rid] == false ) {
+        if (candidates[candidateID].doesExist == true && anony[rid].voted == false) {
             uint voterID = numVoters++;
+            uint id = anony[rid].id;
+
             //voterID is the return variable
-            voters[voterID] = Voter(candidateID);
-            // set
-            anony[rid] = true; 
+            voters[voterID] = Voter(candidateID, id);
+            // increment cats
+            cats[id].count += 1;
+
+            // setter voter voted
+            anony[rid].voted = true;
         }
         else {
-            emit Error(rid);
+            emit Error("voting failed : Invalid Candidate / Voter");
         }
     }
 
@@ -105,6 +175,45 @@ contract Ballot {
         return numOfVotes;
     }
 
+    function advancedVotes(uint candidateid, uint inputcat) view public returns (uint) {
+        uint numVotes = 0;
+        for (uint i = 0; i < numVoters; i++) {
+            if (voters[i].candidateIDVote == candidateid && voters[i].catid == inputcat) {
+                numVotes++;
+            }
+        }
+        return numVotes;
+
+    }
+
+    // voters by cat
+    function specificVotes(uint inputcat) view public returns (uint) {
+        uint numVotes = 0;
+        for (uint i = 0; i < numVoters; i++) {
+            if (voters[i].catid == inputcat) {
+                numVotes++;
+            }
+        }
+        return numVotes;
+
+    }
+
+    // Return Cat Details
+    function returnCats(uint id) public view returns (uint, string memory, uint) {
+        return (id, cats[id].name, cats[id].count);
+    }
+
+    // return cats count
+    function returnCatCount()
+    public
+    view
+    returns
+    (uint)
+    {
+        return numCats;
+
+    }
+
     function getNumOfCandidates() public view returns (uint) {
         return numCandidates;
     }
@@ -117,7 +226,11 @@ contract Ballot {
         return (candidateID, candidates[candidateID].name, candidates[candidateID].party);
     }
 
-    function returnMappingValue(string memory rid) public view returns ( bool) {
-        return (anony[rid]);
-    }  
+    function returnMappingValue(string memory rid) public view returns (bool) {
+        return (anony[rid].voted);
+    }
+
+    function currentState() public view returns (State) {
+        return state;
+    }
 }

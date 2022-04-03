@@ -1,6 +1,11 @@
+import 'dart:js';
+
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:vote/func/msg.dart';
+import 'package:vote/services/db.dart';
+
+// Candidate UI
+import 'package:vote/screens/home/candidatesUI.dart';
 
 class ValidateUi extends StatelessWidget {
   const ValidateUi({Key? key}) : super(key: key);
@@ -42,7 +47,7 @@ class ValidateUi extends StatelessWidget {
                     backgroundColor: Colors.white,
                   ),
                   onPressed: () async {
-                    validate(id.text);
+                    validate(context, id.text);
                   },
                   child: const Text('Proceed to Vote'),
                 ),
@@ -52,19 +57,20 @@ class ValidateUi extends StatelessWidget {
     );
   }
 
-  Future validate(String name) async {
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
+  Future validate(BuildContext context, String id) async {
+    final db = DatabaseService();
 
-    final QuerySnapshot result = await firestore
-        .collection('users')
-        .where('age', isEqualTo: name)
-        .limit(1)
-        .get();
-    final List<DocumentSnapshot> documents = result.docs;
+    final documents = await db.isAlreadyExist(id);
     if (documents.length == 1) {
-      showsnak("Id Already Used");
+      // pusher
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const ViewUserPage()),
+      );
+
+      showsnak("Go Ahead");
     } else {
-      showsnak("lessgoo");
+      showsnak("No ID Registered");
     }
   }
 }

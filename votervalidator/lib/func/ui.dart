@@ -1,13 +1,11 @@
-import 'dart:typed_data';
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:uuid/uuid_util.dart';
+
+import '../db/auth.dart';
 import 'addVoters.dart';
 import 'contract_link.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+
 // notifier
 import 'msg.dart';
 
@@ -40,19 +38,33 @@ class MainUi extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              TextField(
-                controller: id,
-                decoration: const InputDecoration(
-                  hintText: "NIC",
-                  border: OutlineInputBorder(),
-                  suffixIcon: Icon(
-                    Icons.check_circle,
+              // card
+              Card(
+                child: ListTile(
+                  title: TextField(
+                    controller: id,
+                    decoration: const InputDecoration(
+                      hintText: "NIC",
+                      border: OutlineInputBorder(),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFF6200EE)),
+                      ),
+                    ),
                   ),
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFF6200EE)),
+                  trailing: FutureProvider(
+                    create: (_) {
+                      return load(context);
+                    },
+                    initialData: const [],
+                    child: Consumer<List>(
+                        builder: (_, value, __) => value.isEmpty
+                            ? const Icon(Icons.water)
+                            : Text(value[1].toString())),
                   ),
                 ),
               ),
+              // ---------------
+
               Padding(
                 padding: const EdgeInsets.all(50.0),
                 child: Column(
@@ -115,14 +127,21 @@ class MainUi extends StatelessWidget {
     if (documents.length == 1) {
       showsnak("NIC already used !");
     } else {
-      showsnak("Success");
+      showsnak("Validated !");
 
       await db.addVoter(id, rid);
 
+      // fetches uid
+      final auth = Auth();
+      String uid = await auth.uid();
+
+      // fetches catid from uid doc
+      int _catId = await db.catIdFetcher(uid);
+      BigInt catId = BigInt.from(_catId);
+
       // contract
-      String gg = "ff";
       var contractLink = Provider.of<ContractLinking>(context, listen: false);
-      await contractLink.votervalid(rid);
+      await contractLink.votervalid(rid, catId);
     }
   }
 
@@ -138,4 +157,20 @@ void checkData(BuildContext context) async {
   final User? user = _auth.currentUser;
   IdTokenResult idTokenResult = await (user!.getIdTokenResult());
   print('claims : ${idTokenResult.claims}');
+}
+
+Future<List> load(context) async {
+  var link = Provider.of<ContractLinking>(context, listen: false);
+
+  // fetches uid
+  final auth = Auth();
+  String uid = await auth.uid();
+
+  // fetches catid from uid doc
+  final db = DatabaseService();
+  int _catId = await db.catIdFetcher(uid);
+  BigInt catId = BigInt.from(_catId);
+
+  final List data = await link.returnCats(catId);
+  return data;
 }

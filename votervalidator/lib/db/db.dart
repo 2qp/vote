@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 // models
 import '../models/voter.dart';
@@ -17,6 +15,16 @@ class DatabaseService {
         .limit(1)
         .get();
     return results.docs;
+  }
+
+  // category id fetcher
+  Future<int> catIdFetcher(String uid) async {
+    print(uid);
+    final results = await _db.collection('Validators').doc(uid).get();
+
+    int id = results.get("catId");
+    print(id);
+    return id;
   }
 
   // ### Setters ###

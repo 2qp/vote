@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
-import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class ContractLinking extends ChangeNotifier {
-  final String _rpcUrl = "http://127.0.0.1:9545";
-  final String _wsUrl = "ws://127.0.0.1:9545/";
+  final String _rpcUrl = "http://127.0.0.1:7545";
+  final String _wsUrl = "ws://127.0.0.1:7545/";
   final String _privateKey =
-      "f24161642669a8212ec4efe9b54fd0b4d95080b5c0ef7de462aca6526db1c188";
+      "47ef1b923039012a89b1b8172fa74c4d2f416d74cc7714ca9c924bee64cadf36";
   late EthereumAddress owner;
 
   late Web3Client _client;
@@ -23,6 +23,9 @@ class ContractLinking extends ChangeNotifier {
   late ContractFunction _entry;
   late ContractFunction _returnMappingValue;
 
+  late ContractFunction _catCount;
+  late ContractFunction _returnCats;
+
   bool isLoading = true;
 
   // temp
@@ -34,7 +37,7 @@ class ContractLinking extends ChangeNotifier {
 
   inititalSetup() async {
     _client = Web3Client(_rpcUrl, Client(), socketConnector: () {
-      return IOWebSocketChannel.connect(_wsUrl).cast<String>();
+      return WebSocketChannel.connect(Uri.parse(_wsUrl)).cast<String>();
     });
     await getAbi();
     await getCredentials();
@@ -62,16 +65,19 @@ class ContractLinking extends ChangeNotifier {
 
     _entry = _contract.function("entry");
     _returnMappingValue = _contract.function("returnMappingValue");
+
+    _catCount = _contract.function("returnCatCount");
+    _returnCats = _contract.function("returnCats");
   }
 
   // dep.app
-  votervalid(String rid) async {
+  votervalid(String rid, BigInt id) async {
     isLoading = true;
     notifyListeners();
     await _client.sendTransaction(
         _credentials,
         Transaction.callContract(
-            contract: _contract, function: _entry, parameters: [rid]));
+            contract: _contract, function: _entry, parameters: [rid, id]));
     // ignore: avoid_print
     print("Voter Registered $rid");
   }
@@ -82,5 +88,18 @@ class ContractLinking extends ChangeNotifier {
     var tvotes = await _client.call(
         contract: _contract, function: _returnMappingValue, params: [rid]);
     return "$tvotes";
+  }
+
+  Future<BigInt> catCount() async {
+    var numOfVotes = await _client
+        .call(contract: _contract, function: _catCount, params: []);
+    return numOfVotes.first;
+  }
+
+  Future<List> returnCats(BigInt id) async {
+    final List list = await _client
+        .call(contract: _contract, function: _returnCats, params: [id]);
+    notifyListeners();
+    return list;
   }
 }

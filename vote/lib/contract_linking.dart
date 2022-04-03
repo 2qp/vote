@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:web3dart/web3dart.dart';
-import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class ContractLinking extends ChangeNotifier {
   final String _rpcUrl = "http://127.0.0.1:7545";
   final String _wsUrl = "ws://127.0.0.1:7545/";
   final String _privateKey =
-      "0x029983c7832e4150ffd2dcf8be5d7469a1d04b3b415ced897a5ac98e018a8245";
+      "47ef1b923039012a89b1b8172fa74c4d2f416d74cc7714ca9c924bee64cadf36";
   late EthereumAddress owner;
 
   late Web3Client _client;
@@ -22,6 +22,8 @@ class ContractLinking extends ChangeNotifier {
   late ContractFunction _voteFunc;
   late ContractFunction _numOfVoters;
 
+  late ContractEvent _error;
+
   bool isLoading = true;
 
   ContractLinking() {
@@ -30,7 +32,7 @@ class ContractLinking extends ChangeNotifier {
 
   inititalSetup() async {
     _client = Web3Client(_rpcUrl, Client(), socketConnector: () {
-      return IOWebSocketChannel.connect(_wsUrl).cast<String>();
+      return WebSocketChannel.connect(Uri.parse(_wsUrl)).cast<String>();
     });
     await getAbi();
     await getCredentials();
@@ -57,6 +59,7 @@ class ContractLinking extends ChangeNotifier {
 
     _voteFunc = _contract.function("vote");
     _numOfVoters = _contract.function("getNumOfVoters");
+    _error = _contract.event("Error");
   }
 
   // voting
@@ -77,5 +80,16 @@ class ContractLinking extends ChangeNotifier {
     var noc = await _client
         .call(contract: _contract, function: _numOfVoters, params: []);
     return "$noc";
+  }
+
+  // error handler
+  Future<String> error() async {
+    notifyListeners();
+    final event = await _client
+        .events(FilterOptions.events(contract: _contract, event: _error))
+        .first;
+    final decoded = _error.decodeResults(event.topics!, event.data ?? '');
+    final errorcode = decoded[0] ?? '';
+    return errorcode;
   }
 }

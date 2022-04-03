@@ -1,12 +1,14 @@
-import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:votedepartment/func/addCandidate.dart';
-import 'msg.dart';
+//import 'vote.dart';
+import 'package:votedepartment/ui/home.dart';
 
 //import 'screens/home/home.dart';
 import 'contract_link.dart';
-//import 'vote.dart';
-import 'package:votedepartment/ui/home.dart';
+import 'msg.dart';
+
+import 'package:votedepartment/ui/uitest.dart';
 
 class App extends StatelessWidget {
   const App({Key? key}) : super(key: key);
