@@ -45,6 +45,9 @@ dependencies:
   web_socket_channel: ^2.1.0
   uuid: ^3.0.6
 
+  # stylized
+  persistent_bottom_nav_bar: ^4.0.2
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

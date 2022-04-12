@@ -90,11 +90,16 @@ contract Ballot {
 
     // 4da Validations / entry of category id
     function entry(string memory rid, uint id) onlyOwner public
-    inState(State.Created)
-    {
+    
+    { // need state validation here; ongoing voting
+        if (state == State.Created || state == State.Voting){
 
-        anony[rid] = Anon(false, id);
-        emit AddedEntry(rid, id);
+            anony[rid] = Anon(false, id);
+            emit AddedEntry(rid, id);
+
+        } else{
+            emit Error("Voting is started / Ended");
+        }
     }
 
     // state init for voting
@@ -108,14 +113,15 @@ contract Ballot {
     // stop voting
     function stopVoting() onlyOwner public
     inState(State.Voting)
-    {
-        state = State.Ended;
+    {   // a change
+        state = State.Created;
         emit isVoting(false);
     }
 
-
+    // error handled function
     function addCandidate(string memory name, string memory party) onlyOwner public
-    inState(State.Created)
+    {
+        if (state == State.Created)
     {
         // candidateID is the return variable
         uint candidateID = numCandidates++;
@@ -123,15 +129,27 @@ contract Ballot {
         candidates[candidateID] = Candidate(name, party, true);
         emit AddedCandidate(candidateID);
     }
+    else {
+        emit Error("someting wong wit da state");
+    }
+    }
 
     function addCats(string memory name)
     onlyOwner
     public
-    inState(State.Created)
+    
     {
-        uint id = numCats++;
-        cats[id] = Cats(name, 0);
-        emit AddedCat(id, name);
+        if (state == State.Created){
+
+            uint id = numCats++;
+            cats[id] = Cats(name, 0);
+
+            emit AddedCat(id, name);
+
+        } else {
+            
+            emit Error("State Issue");
+        }
 
     }
 
@@ -175,27 +193,56 @@ contract Ballot {
         return numOfVotes;
     }
 
-    function advancedVotes(uint candidateid, uint inputcat) view public returns (uint) {
+    function voteswithId(uint candidateID) view public returns (string memory, uint) {
+        uint numOfVotes = 0;
+        string memory name;
+
+        for (uint i = 0; i < numVoters; i++) {
+            // if the voter votes for this specific candidate, we increment the number
+            if (voters[i].candidateIDVote == candidateID) {
+                numOfVotes++;
+                // retrieve name
+                name = candidates[candidateID].name;
+            }
+        }
+        return (name, numOfVotes);
+    }
+
+    // votes by specific candidate id & category
+    function advancedVotes(uint candidateid, uint inputcat) view public returns (string memory, uint) {
         uint numVotes = 0;
+        string memory name;
         for (uint i = 0; i < numVoters; i++) {
             if (voters[i].candidateIDVote == candidateid && voters[i].catid == inputcat) {
                 numVotes++;
+                name = cats[inputcat].name;
             }
         }
-        return numVotes;
+        return (name, numVotes);
 
     }
 
-    // voters by cat
-    function specificVotes(uint inputcat) view public returns (uint) {
-        uint numVotes = 0;
+    // return candidate details and votes
+    function getCandidateData(uint candidateID) view public returns (uint, string memory, string memory, uint) {
+        uint numOfVotes = 0;
+        string memory name;
+        string memory party;
+
         for (uint i = 0; i < numVoters; i++) {
-            if (voters[i].catid == inputcat) {
-                numVotes++;
+            // if the voter votes for this specific candidate, we increment the number
+            if (voters[i].candidateIDVote == candidateID) {
+                numOfVotes++;
+                // retrieve name
+                name = candidates[candidateID].name;
+                party = candidates[candidateID].party;
             }
         }
-        return numVotes;
-
+        return (candidateID, name, party, numOfVotes);
+    }
+ 
+    // votes by cats
+    function votesbycat(uint id) public view returns ( string memory, uint) {
+        return (cats[id].name, cats[id].count);
     }
 
     // Return Cat Details

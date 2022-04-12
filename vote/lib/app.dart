@@ -41,7 +41,7 @@ class App extends StatelessWidget {
         supportedLocales: S.delegate.supportedLocales,
         theme:
             ThemeData(brightness: Brightness.dark, primaryColor: Colors.black),
-        home: const ValidateUi(),
+        home: const Voteui(),
       ),
     );
   }

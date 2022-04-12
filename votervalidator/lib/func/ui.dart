@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:votervalidator/func/streamtest.dart';
 
 import '../db/auth.dart';
 import 'addVoters.dart';
@@ -16,14 +17,12 @@ import 'package:votervalidator/db/db.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class MainUi extends StatelessWidget {
-  const MainUi({Key? key, required this.uid}) : super(key: key);
-  final String uid;
+  const MainUi({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    var fire = Provider.of<AddUser>(context);
     var contractLink = Provider.of<ContractLinking>(context, listen: false);
-    print(uid);
+
     TextEditingController id = TextEditingController();
 
     return Scaffold(
@@ -101,6 +100,22 @@ class MainUi extends StatelessWidget {
                       height: 10.0,
                     ),
 
+                    OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        primary: Colors.black,
+                        backgroundColor: Colors.white,
+                      ),
+                      onPressed: () async {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const Streamers()),
+                        );
+                        //contractLink.registerVoter(Parse, canid.text);
+                      },
+                      child: const Text('Go to Stream'),
+                    ),
+
                     // candidate data
                   ],
                 ),
@@ -170,7 +185,9 @@ Future<List> load(context) async {
   final db = DatabaseService();
   int _catId = await db.catIdFetcher(uid);
   BigInt catId = BigInt.from(_catId);
+  print("catID : $catId");
 
   final List data = await link.returnCats(catId);
+
   return data;
 }

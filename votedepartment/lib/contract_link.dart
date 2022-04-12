@@ -8,11 +8,14 @@ import 'package:web3dart/web3dart.dart';
 
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+// event setter
+import 'msg.dart';
+
 class ContractLinking extends ChangeNotifier {
   final String _rpcUrl = "http://127.0.0.1:7545";
   final String _wsUrl = "ws://127.0.0.1:7545/";
   final String _privateKey =
-      "47ef1b923039012a89b1b8172fa74c4d2f416d74cc7714ca9c924bee64cadf36";
+      "2c3ba7c96a6aeadf31c33b49be42c9ef1e16aef85c822e5a0a2c99355f30142e";
   late EthereumAddress owner;
 
   late Web3Client _client;
@@ -40,6 +43,12 @@ class ContractLinking extends ChangeNotifier {
   late ContractEvent _error;
   late ContractEvent _isCreated;
   late ContractEvent _isVoting;
+
+  // getters
+  late ContractFunction _voteswithId;
+  late ContractFunction _votesbycat;
+  late ContractFunction _advancedvotes;
+  late ContractFunction _getCandidateData;
 
   bool isLoading = false;
 
@@ -97,6 +106,12 @@ class ContractLinking extends ChangeNotifier {
     _error = _contract.event("Error");
     _isCreated = _contract.event("isCreated");
     _isVoting = _contract.event("isVoting");
+
+    // getters
+    _voteswithId = _contract.function("voteswithId");
+    _votesbycat = _contract.function("votesbycat");
+    _advancedvotes = _contract.function("advancedVotes");
+    _getCandidateData = _contract.function("getCandidateData");
   }
 
   Future<void> addCat(String name) async {
@@ -127,6 +142,7 @@ class ContractLinking extends ChangeNotifier {
           function: _addCandidate,
           parameters: [name, party]),
     );
+    error();
     getNumOfCandidates();
     print("Voter Registered $name");
     isLoading = false;
@@ -135,19 +151,20 @@ class ContractLinking extends ChangeNotifier {
   // Start Voting
   Future<void> startVoting() async {
     isLoading = true;
-    notifyListeners();
+
     await _client.sendTransaction(
         _credentials,
         Transaction.callContract(
             contract: _contract, function: _startVoting, parameters: []));
     await votingState();
     isLoading = false;
+    notifyListeners();
   }
 
   // End Voting
   Future<void> stopVoting() async {
     isLoading = true;
-    notifyListeners();
+
     await _client.sendTransaction(
         _credentials,
         Transaction.callContract(
@@ -168,14 +185,6 @@ class ContractLinking extends ChangeNotifier {
             function: _voteFunc,
             parameters: [(uid), candidateID]));
     //getChairperson();
-  }
-
-  Future<void> getNumOfCandidates() async {
-    notifyListeners();
-    await _client.sendTransaction(
-        _credentials,
-        Transaction.callContract(
-            contract: _contract, function: _numOfCandidates, parameters: []));
   }
 
   // dep.app
@@ -234,14 +243,17 @@ class ContractLinking extends ChangeNotifier {
     return id;
   }
 
-  Future<String> error() async {
+  // retrives Error String if event dispatched from contract and toast it
+  Future<void> error() async {
     notifyListeners();
     final event = await _client
         .events(FilterOptions.events(contract: _contract, event: _error))
         .first;
     final decoded = _error.decodeResults(event.topics!, event.data ?? '');
-    final errorcode = decoded[0] ?? '';
-    return errorcode;
+    final String errorcode = decoded[0] ?? '';
+    if (errorcode.isNotEmpty) {
+      showsnak(errorcode);
+    }
   }
 
   Future<bool> createdState() async {
@@ -283,6 +295,92 @@ class ContractLinking extends ChangeNotifier {
       list.add(cats);
     }
     notifyListeners();
+    return list;
+  }
+
+  // get num of candidates
+  Future<BigInt> getNumOfCandidates() async {
+    var candidates = await _client
+        .call(contract: _contract, function: _numOfCandidates, params: []);
+    return candidates.first;
+  }
+
+  // Votes with Candidate ID
+
+  Future<List> voteswithid() async {
+    // rec a bigInt
+    BigInt count = await getNumOfCandidates();
+    // Parsing 2 int
+    int count2 = count.toInt();
+    var list = <List>[];
+
+    for (int i = 0; i < count2; i++) {
+      var cats = await _client.call(
+          contract: _contract,
+          function: _voteswithId,
+          params: [BigInt.from(i)]);
+      list.add(cats);
+    }
+    notifyListeners();
+    print(list);
+    return list;
+  }
+
+  // votes by cat
+  Future<List> votesbycat() async {
+    // rec a bigInt
+    BigInt count = await catCount();
+    // Parsing 2 int
+    int count2 = count.toInt();
+    var list = <List>[];
+
+    for (int i = 0; i < count2; i++) {
+      var cat = await _client.call(
+          contract: _contract, function: _votesbycat, params: [BigInt.from(i)]);
+      list.add(cat);
+    }
+    notifyListeners();
+    return list;
+  }
+
+  // advanced votes by candidate / category
+  Future<List> advancedvotes(BigInt candidateId) async {
+    print(candidateId);
+    // rec a bigInt
+    BigInt count = await catCount();
+    // Parsing 2 int
+    int count2 = count.toInt();
+    var list = <List>[];
+
+    for (int i = 0; i < count2; i++) {
+      var cat = await _client.call(
+          contract: _contract,
+          function: _advancedvotes,
+          params: [candidateId, BigInt.from(i)]);
+      list.add(cat);
+    }
+    notifyListeners();
+    print(list);
+    return list;
+  }
+
+  // get candidates data with votes
+  Future<List> getCandidateData() async {
+    // rec a bigInt
+    BigInt count = await getNumOfCandidates();
+    // Parsing 2 int
+    int count2 = count.toInt();
+    var list = <List>[];
+
+    for (int i = 0; i < count2; i++) {
+      var candidate = await _client.call(
+          contract: _contract,
+          function: _getCandidateData,
+          params: [BigInt.from(i)]);
+      list.add(candidate);
+    }
+    notifyListeners();
+    print(list);
     return list;
   }
 }

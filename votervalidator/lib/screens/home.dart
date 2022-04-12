@@ -2,18 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:persistent_bottom_nav_bar/persistent-tab-view.dart';
 // UIs
-import 'package:votedepartment/vote.dart';
-
-import 'addCats.dart';
-import 'control.dart';
-import 'grid.dart';
-import 'test.dart';
-// test
-import 'switch.dart';
-
-//stats
-import 'package:votedepartment/stats/advanced_votes/list.dart';
-import 'package:votedepartment/stats/votesby_candidate/view.dart';
+import 'package:votervalidator/func/ui.dart';
+import 'package:votervalidator/screens/settings.dart';
 
 class Home extends StatelessWidget {
   const Home({Key? key}) : super(key: key);
@@ -63,16 +53,7 @@ class Home extends StatelessWidget {
   }
 
   List<Widget> _buildScreens() {
-    return [
-      const Voteui(),
-      Sign(),
-      //const Grid(),
-      const Lists(),
-      const Control(),
-      const AddCats(),
-      const PieCharts()
-      //const Total()
-    ];
+    return [const MainUi(), const Settings()];
   }
 
   List<PersistentBottomNavBarItem> _navBarsItems() {
@@ -84,32 +65,8 @@ class Home extends StatelessWidget {
         inactiveColorPrimary: CupertinoColors.systemGrey,
       ),
       PersistentBottomNavBarItem(
-        icon: const Icon(CupertinoIcons.lock_circle),
-        title: ("Candidates"),
-        activeColorPrimary: CupertinoColors.activeBlue,
-        inactiveColorPrimary: CupertinoColors.systemGrey,
-      ),
-      PersistentBottomNavBarItem(
-        icon: const Icon(CupertinoIcons.grid),
-        title: ("Menu"),
-        activeColorPrimary: CupertinoColors.activeBlue,
-        inactiveColorPrimary: CupertinoColors.systemGrey,
-      ),
-      PersistentBottomNavBarItem(
-        icon: const Icon(CupertinoIcons.control),
-        title: ("Control"),
-        activeColorPrimary: CupertinoColors.activeBlue,
-        inactiveColorPrimary: CupertinoColors.systemGrey,
-      ),
-      PersistentBottomNavBarItem(
-        icon: const Icon(CupertinoIcons.list_bullet),
-        title: ("Categories"),
-        activeColorPrimary: CupertinoColors.activeBlue,
-        inactiveColorPrimary: CupertinoColors.systemGrey,
-      ),
-      PersistentBottomNavBarItem(
-        icon: const Icon(CupertinoIcons.chart_bar),
-        title: ("Stat"),
+        icon: const Icon(CupertinoIcons.settings),
+        title: ("Settings"),
         activeColorPrimary: CupertinoColors.activeBlue,
         inactiveColorPrimary: CupertinoColors.systemGrey,
       ),

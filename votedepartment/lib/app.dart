@@ -8,8 +8,6 @@ import 'package:votedepartment/ui/home.dart';
 import 'contract_link.dart';
 import 'msg.dart';
 
-import 'package:votedepartment/ui/uitest.dart';
-
 class App extends StatelessWidget {
   const App({Key? key}) : super(key: key);
 

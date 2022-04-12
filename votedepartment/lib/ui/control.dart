@@ -1,5 +1,8 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:votedepartment/msg.dart';
+import 'package:votedepartment/scoped/switch1.dart';
+
+// link
 import 'package:provider/provider.dart';
 import 'package:votedepartment/contract_link.dart';
 
@@ -8,56 +11,34 @@ class Control extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var link = Provider.of<ContractLinking>(context, listen: true);
+    final Switchy scopedSWitch = Switchy();
+    var link = Provider.of<ContractLinking>(context, listen: false);
 
-    return FutureProvider<bool>(
-      initialData: false,
-      create: (_) {
-        // print('calling future');
-        return load(context);
-      },
-      child: Consumer<bool>(
-        builder: (_, value, __) => Center(
-          child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: link.isLoading
-                  ? const Center(
-                      child: CupertinoActivityIndicator(),
-                    )
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: <Widget>[
-                        CupertinoSwitch(
-                          value: (value),
-                          onChanged: (bool state) async {
-                            if (state == true) {
-                              await link.startVoting();
-                            } else {
-                              await link.stopVoting();
-                            }
-                          },
-                        )
-                      ],
-                    )),
+    return Center(
+      child: FutureBuilder(
+        future: scopedSWitch.changes(context),
+        initialData: false,
+        builder: (context, snapshot) => ChangeNotifierProvider<Switchy>(
+          create: (_) => scopedSWitch,
+          child: Consumer<Switchy>(
+              builder: (_, model, __) => CupertinoSwitch(
+                  value: model.witch.cswitch,
+                  onChanged: (state) async {
+                    scopedSWitch.changed(state);
+                    if (state == true) {
+                      await link.startVoting();
+                    } else {
+                      await link.stopVoting();
+                    }
+                  })),
         ),
       ),
     );
   }
-
-  Future<bool> load(context) async {
-    var link = Provider.of<ContractLinking>(context, listen: false);
-    late bool data;
-
-    // getter current state
-    BigInt _state = await link.getState();
-
-    print(_state);
-    if (_state.toInt() == 1) {
-      data = true;
-      print(data);
-    } else {
-      data = false;
-    }
-    return data;
-  }
 }
+
+
+// issue : cannot listen to provider 4 use isLoading/ circular progress
+// loop cause
+// it calls future function repeatly
+// Provider, FutureProvider does not listen for any changes within the model itself.

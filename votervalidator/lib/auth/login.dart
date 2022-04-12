@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 // func
 import 'package:votervalidator/func/ui.dart';
+import 'package:votervalidator/screens/home.dart';
 
 // msg
 import '../func/msg.dart';
@@ -91,8 +92,7 @@ class Login extends StatelessWidget {
           .then((result) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-              builder: (context) => MainUi(uid: result.user!.uid)),
+          MaterialPageRoute(builder: (context) => const Home()),
         );
       });
     } on FirebaseAuthException catch (e) {
