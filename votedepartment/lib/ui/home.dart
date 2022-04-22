@@ -15,6 +15,9 @@ import 'switch.dart';
 import 'package:votedepartment/stats/advanced_votes/list.dart';
 import 'package:votedepartment/stats/votesby_candidate/view.dart';
 
+// form
+import 'package:votedepartment/ui/addCandidates.dart';
+
 class Home extends StatelessWidget {
   const Home({Key? key}) : super(key: key);
 
@@ -64,7 +67,8 @@ class Home extends StatelessWidget {
 
   List<Widget> _buildScreens() {
     return [
-      const Voteui(),
+      const AddCandidates(),
+      // const Voteui(),
       Sign(),
       //const Grid(),
       const Lists(),
