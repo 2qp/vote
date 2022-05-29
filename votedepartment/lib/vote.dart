@@ -156,7 +156,7 @@ Future<void> inputData(context, String uid, String canid) async {
   var contractLink = Provider.of<ContractLinking>(context, listen: false);
 
   // contract call
-  await contractLink.registerVoter(uid, canid);
+  await contractLink.addCandidate(uid, canid);
 
   BigInt gg = await contractLink.returnCandidateID();
 

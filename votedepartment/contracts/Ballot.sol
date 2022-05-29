@@ -9,6 +9,13 @@ contract Ballot {
     event AddedEntry(string rid, uint id);
     event Error(string error);
 
+    // Error Dispatchers
+    // 1: Validator | 2: Voting | 3: Department
+    event Error1(string error);
+    event Error2(string error);
+    event Error3(string error);
+    
+
     // States Events
     event isCreated(bool cState);
     event isVoting(bool cState);
@@ -98,7 +105,7 @@ contract Ballot {
             emit AddedEntry(rid, id);
 
         } else{
-            emit Error("Voting is started / Ended");
+            emit Error1("Voting is started / Ended");
         }
     }
 
@@ -118,6 +125,19 @@ contract Ballot {
         emit isVoting(false);
     }
 
+    // ending
+    function end() onlyOwner public
+   
+    {   
+       if(state == State.Created || state == State.Voting){
+            state = State.Ended;
+        emit isVoting(false);
+       }
+       else{
+           emit Error3("Already Ended");
+       }
+    }
+
     // error handled function
     function addCandidate(string memory name, string memory party) onlyOwner public
     {
@@ -128,9 +148,10 @@ contract Ballot {
         // Create new Candidate Struct with name and saves it to storage.
         candidates[candidateID] = Candidate(name, party, true);
         emit AddedCandidate(candidateID);
+        emit Error3("Candidate Added");
     }
     else {
-        emit Error("someting wong wit da state");
+        emit Error3("Voting is Started | Election Ended :(");
     }
     }
 
@@ -148,15 +169,17 @@ contract Ballot {
 
         } else {
             
-            emit Error("State Issue");
+            emit Error3("State Issue");
         }
 
     }
 
     function vote(uint candidateID, string memory rid) public
-    inState(State.Voting)
+    
     {
-        // checks if the struct exists for that candidate
+       if (state == State.Voting){
+
+            // checks if the struct exists for that candidate
         if (candidates[candidateID].doesExist == true && anony[rid].voted == false) {
             uint voterID = numVoters++;
             uint id = anony[rid].id;
@@ -170,8 +193,12 @@ contract Ballot {
             anony[rid].voted = true;
         }
         else {
-            emit Error("voting failed : Invalid Candidate / Voter");
+            emit Error2("voting failed : Invalid Candidate / Voter");
         }
+
+       }else {
+           emit Error2("Voting not started yet / paused");
+       }
     }
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * 

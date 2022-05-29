@@ -1,6 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:persistent_bottom_nav_bar/persistent-tab-view.dart';
+import 'package:provider/provider.dart';
+
+import 'package:votedepartment/contract_link.dart';
 // UIs
 import 'package:votedepartment/vote.dart';
 
@@ -16,16 +19,19 @@ import 'package:votedepartment/stats/advanced_votes/list.dart';
 import 'package:votedepartment/stats/votesby_candidate/view.dart';
 
 // form
-import 'package:votedepartment/ui/addCandidates.dart';
+import 'package:votedepartment/ui/add_candidates.dart';
 
 class Home extends StatelessWidget {
-  const Home({Key? key}) : super(key: key);
+  const Home({
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     PersistentTabController _controller;
 
     _controller = PersistentTabController(initialIndex: 0);
+
     return PersistentTabView(
       context,
       controller: _controller,
@@ -39,7 +45,7 @@ class Home extends StatelessWidget {
       // Default is true.
       resizeToAvoidBottomInset: true,
       // This needs to be true if you want to move up the screen when keyboard appears. Default is true.
-      stateManagement: true,
+      stateManagement: false,
       // Default is true.
       hideNavigationBarWhenKeyboardShows: true,
       // Recommended to set 'resizeToAvoidBottomInset' as true while using this argument. Default is true.
@@ -67,14 +73,15 @@ class Home extends StatelessWidget {
 
   List<Widget> _buildScreens() {
     return [
-      const AddCandidates(),
+      AddCandidates(),
       // const Voteui(),
       Sign(),
       //const Grid(),
-      const Lists(),
+
       const Control(),
       const AddCats(),
-      const PieCharts()
+      const PieCharts(),
+      const Lists(),
       //const Total()
     ];
   }
@@ -94,12 +101,6 @@ class Home extends StatelessWidget {
         inactiveColorPrimary: CupertinoColors.systemGrey,
       ),
       PersistentBottomNavBarItem(
-        icon: const Icon(CupertinoIcons.grid),
-        title: ("Menu"),
-        activeColorPrimary: CupertinoColors.activeBlue,
-        inactiveColorPrimary: CupertinoColors.systemGrey,
-      ),
-      PersistentBottomNavBarItem(
         icon: const Icon(CupertinoIcons.control),
         title: ("Control"),
         activeColorPrimary: CupertinoColors.activeBlue,
@@ -114,6 +115,12 @@ class Home extends StatelessWidget {
       PersistentBottomNavBarItem(
         icon: const Icon(CupertinoIcons.chart_bar),
         title: ("Stat"),
+        activeColorPrimary: CupertinoColors.activeBlue,
+        inactiveColorPrimary: CupertinoColors.systemGrey,
+      ),
+      PersistentBottomNavBarItem(
+        icon: const Icon(CupertinoIcons.grid),
+        title: ("Stats 2"),
         activeColorPrimary: CupertinoColors.activeBlue,
         inactiveColorPrimary: CupertinoColors.systemGrey,
       ),

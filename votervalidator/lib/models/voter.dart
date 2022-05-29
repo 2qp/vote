@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 class Voter {
-  String id;
+  int id;
   String rid;
 
   Voter({

@@ -23,13 +23,15 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => ContractLinking()),
+        ChangeNotifierProvider<ContractLinking>(
+            create: (context) => ContractLinking()),
         StreamProvider<List<Weapon>>(
           create: (context) => DatabaseService().streamWeapons(),
           initialData: [],
         )
       ],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         scaffoldMessengerKey: snackbarKey,
         locale: const Locale('ta'),
         localizationsDelegates: const [
@@ -41,7 +43,7 @@ class App extends StatelessWidget {
         supportedLocales: S.delegate.supportedLocales,
         theme:
             ThemeData(brightness: Brightness.dark, primaryColor: Colors.black),
-        home: const Voteui(),
+        home: const ValidateUi(),
       ),
     );
   }

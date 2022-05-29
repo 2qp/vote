@@ -18,6 +18,10 @@ class App extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (context) => AddUser()),
         ChangeNotifierProvider(create: (context) => ContractLinking()),
+        StreamProvider<User?>.value(
+          value: FirebaseAuth.instance.authStateChanges(),
+          initialData: null,
+        ),
       ],
       child: MaterialApp(
         scaffoldMessengerKey: snackbarKey,

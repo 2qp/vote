@@ -1,8 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:votedepartment/func/addCandidate.dart';
-//import 'vote.dart';
-import 'package:votedepartment/ui/home.dart';
+import 'package:votedepartment/splash.dart';
 
 //import 'screens/home/home.dart';
 import 'contract_link.dart';
@@ -17,12 +17,16 @@ class App extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (context) => AddCandidate()),
         ChangeNotifierProvider(create: (context) => ContractLinking()),
+        StreamProvider<User?>.value(
+          value: FirebaseAuth.instance.authStateChanges(),
+          initialData: null,
+        ),
       ],
       child: MaterialApp(
         scaffoldMessengerKey: snackbarKey,
         theme:
             ThemeData(brightness: Brightness.dark, primaryColor: Colors.black),
-        home: const Home(),
+        home: const Splash(),
       ),
     );
   }

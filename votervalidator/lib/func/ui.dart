@@ -77,12 +77,12 @@ class MainUi extends StatelessWidget {
                         backgroundColor: Colors.white,
                       ),
                       onPressed: () async {
-                        inputData(context, id.text);
+                        inputData(context, int.parse(id.text));
                         //contractLink.registerVoter(Parse, canid.text);
                       },
                       child: const Text('Register'),
                     ),
-
+/*
                     // claim checker btn
                     OutlinedButton(
                       style: OutlinedButton.styleFrom(
@@ -95,11 +95,11 @@ class MainUi extends StatelessWidget {
                       },
                       child: const Text('Register'),
                     ),
-
+*/
                     const SizedBox(
                       height: 10.0,
                     ),
-
+                    /*
                     OutlinedButton(
                       style: OutlinedButton.styleFrom(
                         primary: Colors.black,
@@ -114,7 +114,25 @@ class MainUi extends StatelessWidget {
                         //contractLink.registerVoter(Parse, canid.text);
                       },
                       child: const Text('Go to Stream'),
-                    ),
+                    ), */
+
+                    Consumer<ContractLinking>(
+                        builder: ((context, value, child) =>
+                            StreamProvider<bool>(
+                              create: (((_) => value.transferEvents())),
+                              initialData: true,
+                              child: Consumer<bool>(
+                                  builder: ((context, value, child) => Center(
+                                          child: Stack(
+                                        children: <Widget>[
+                                          Icon(Icons.trip_origin,
+                                              color: value == true
+                                                  ? Colors.green
+                                                  : Colors.red),
+                                          // using consumer to avoid full rebuilds
+                                        ],
+                                      )))),
+                            ))),
 
                     // candidate data
                   ],
@@ -127,7 +145,7 @@ class MainUi extends StatelessWidget {
     );
   }
 
-  void inputData(context, String id) async {
+  void inputData(context, int id) async {
     // firestore instance
     final db = DatabaseService();
 

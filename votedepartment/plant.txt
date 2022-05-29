@@ -1,0 +1,303 @@
+@startuml
+set namespaceSeparator ::
+
+class "votedepartment::app.dart::App" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "votedepartment::app.dart::App"
+
+class "votedepartment::db::db.dart::DatabaseService" {
+  -FirebaseFirestore _db
+  +Future<void> addCandidate()
+}
+
+"votedepartment::db::db.dart::DatabaseService" o-- "cloud_firestore::cloud_firestore.dart::FirebaseFirestore"
+
+class "votedepartment::services::streams.dart::StreamService" {
+}
+
+class "votedepartment::services::storage.dart::Storage" {
+  +Future<void> upload()
+}
+
+class "votedepartment::func::signup.dart::Auth" {
+  -FirebaseAuth _auth
+  +Future<void> sign()
+  +Future<void> claim()
+  +Future<bool> authorize()
+  +Future<bool> isAdminExist()
+}
+
+"votedepartment::func::signup.dart::Auth" o-- "firebase_auth::firebase_auth.dart::FirebaseAuth"
+
+class "votedepartment::func::addCandidate.dart::AddCandidate" {
+  +CollectionReference<Object?> candidates
+  +Future<dynamic> addUser()
+}
+
+"votedepartment::func::addCandidate.dart::AddCandidate" o-- "cloud_firestore::cloud_firestore.dart::CollectionReference<Object>"
+"flutter::src::foundation::change_notifier.dart::ChangeNotifier" <|-- "votedepartment::func::addCandidate.dart::AddCandidate"
+
+class "votedepartment::func::addCandidate.dart::jj" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "votedepartment::func::addCandidate.dart::jj"
+
+class "votedepartment::stats::votesby_cat::view.dart::PieCharts" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "votedepartment::stats::votesby_cat::view.dart::PieCharts"
+
+class "votedepartment::stats::votesby_cat::data.dart::Data" {
+  +Future<Map<String, double>> fetch()
+}
+
+class "votedepartment::stats::advanced_votes::view.dart::PieCharts" {
+  +BigInt candidateId
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "votedepartment::stats::advanced_votes::view.dart::PieCharts"
+
+class "votedepartment::stats::advanced_votes::list.dart::Lists" {
+  +Widget build()
+  +Future<List<dynamic>> load()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "votedepartment::stats::advanced_votes::list.dart::Lists"
+
+class "votedepartment::stats::advanced_votes::data.dart::Data" {
+  +Future<Map<String, double>> fetch()
+}
+
+class "votedepartment::stats::votesby_candidate::view.dart::PieCharts" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "votedepartment::stats::votesby_candidate::view.dart::PieCharts"
+
+class "votedepartment::stats::votesby_candidate::data.dart::Data" {
+  +Future<Map<String, double>> fetch()
+}
+
+class "votedepartment::models::candidate.dart::Candidate" {
+  +int id
+  +String name
+  +String party
+  +Map<String, dynamic> toMap()
+}
+
+class "votedepartment::models::state.dart::Show" {
+  +bool togle
+}
+
+class "votedepartment::models::validators.dart::Validator" {
+  +String? username
+  +String? password
+  +dynamic check()
+}
+
+class "votedepartment::firebase_options.dart::DefaultFirebaseOptions" {
+  {static} +FirebaseOptions web
+  {static} +FirebaseOptions android
+  {static} +FirebaseOptions currentPlatform
+}
+
+"votedepartment::firebase_options.dart::DefaultFirebaseOptions" o-- "firebase_core_platform_interface::firebase_core_platform_interface.dart::FirebaseOptions"
+
+class "votedepartment::ui::add_candidates.dart::AddCandidates" {
+  +FilePickerResult? result
+  +Widget build()
+  +Future<void> inputData()
+}
+
+"votedepartment::ui::add_candidates.dart::AddCandidates" o-- "file_picker::src::file_picker_result.dart::FilePickerResult"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "votedepartment::ui::add_candidates.dart::AddCandidates"
+
+class "votedepartment::ui::addCats.dart::AddCats" {
+  +Widget build()
+  +Widget catList()
+  +Future<List<dynamic>> load()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "votedepartment::ui::addCats.dart::AddCats"
+
+class "votedepartment::ui::switch.dart::Switches" {
+  +State<Switches> createState()
+}
+
+"flutter::src::widgets::framework.dart::StatefulWidget" <|-- "votedepartment::ui::switch.dart::Switches"
+
+class "votedepartment::ui::switch.dart::_SwitchesState" {
+  +Switchy scopedSWitch
+  +void initState()
+  +Widget build()
+}
+
+"votedepartment::ui::switch.dart::_SwitchesState" o-- "votedepartment::scoped::switch1.dart::Switchy"
+"flutter::src::widgets::framework.dart::State" <|-- "votedepartment::ui::switch.dart::_SwitchesState"
+
+class "votedepartment::ui::admin_login.dart::AdminLog" {
+  +Widget build()
+  +Future<void> login()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "votedepartment::ui::admin_login.dart::AdminLog"
+
+class "votedepartment::ui::admin_login.dart::CurvePainter" {
+  +void paint()
+  +bool shouldRepaint()
+}
+
+"flutter::src::rendering::custom_paint.dart::CustomPainter" <|-- "votedepartment::ui::admin_login.dart::CurvePainter"
+
+class "votedepartment::ui::grid.dart::Grid" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "votedepartment::ui::grid.dart::Grid"
+
+class "votedepartment::ui::control.dart::Control" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "votedepartment::ui::control.dart::Control"
+
+class "votedepartment::ui::home.dart::Home" {
+  +Widget build()
+  -List<Widget> _buildScreens()
+  -List<PersistentBottomNavBarItem> _navBarsItems()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "votedepartment::ui::home.dart::Home"
+
+class "votedepartment::ui::test.dart::Sign" {
+  +Picker pickerInstance
+  +Widget build()
+  +Future<void> catList()
+}
+
+"votedepartment::ui::test.dart::Sign" o-- "votedepartment::scoped::picker1.dart::Picker"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "votedepartment::ui::test.dart::Sign"
+
+class "votedepartment::contract_link.dart::ContractLinking" {
+  -String _rpcUrl
+  -String _wsUrl
+  -String _privateKey
+  +EthereumAddress owner
+  -Web3Client _client
+  -String _abiCode
+  -Credentials _credentials
+  -EthereumAddress _contractAddress
+  -DeployedContract _contract
+  -ContractFunction _addCandidate
+  -ContractFunction _voteFunc
+  -ContractFunction _totalVotes
+  -ContractFunction _numOfCandidates
+  -ContractFunction _numOfVoters
+  -ContractFunction _getCandidate
+  -ContractFunction _startVoting
+  -ContractFunction _stopVoting
+  -ContractFunction _getState
+  -ContractFunction _addCat
+  -ContractFunction _catCount
+  -ContractFunction _returnCats
+  -ContractEvent _returnCandidateID
+  -ContractEvent _error
+  -ContractEvent _isCreated
+  -ContractEvent _isVoting
+  -ContractFunction _voteswithId
+  -ContractFunction _votesbycat
+  -ContractFunction _advancedvotes
+  -ContractFunction _getCandidateData
+  +bool isLoading
+  +TextEditingController txt
+  +Web3Client client
+  +Future<void> inititalSetup()
+  +Future<void> getAbi()
+  +Future<void> getCredentials()
+  +Future<void> getDeployedContract()
+  +Future<void> addCat()
+  +Future<void> addCandidate()
+  +Future<void> startVoting()
+  +Future<void> stopVoting()
+  +dynamic vote()
+  +dynamic getNumOfVoters()
+  +dynamic getCandidate()
+  +Future<BigInt> getState()
+  +dynamic totalVotes()
+  +dynamic winner()
+  +Future<BigInt> returnCandidateID()
+  +Future<void> error()
+  +Future<bool> createdState()
+  +Future<bool> votingState()
+  +Future<BigInt> catCount()
+  +Future<List<dynamic>> returnCats()
+  +Future<BigInt> getNumOfCandidates()
+  +Future<List<dynamic>> voteswithid()
+  +Future<List<dynamic>> votesbycat()
+  +Future<List<dynamic>> advancedvotes()
+  +Future<List<dynamic>> getCandidateData()
+}
+
+"votedepartment::contract_link.dart::ContractLinking" o-- "web3dart::src::credentials::address.dart::EthereumAddress"
+"votedepartment::contract_link.dart::ContractLinking" o-- "web3dart::web3dart.dart::Web3Client"
+"votedepartment::contract_link.dart::ContractLinking" o-- "web3dart::src::credentials::credentials.dart::Credentials"
+"votedepartment::contract_link.dart::ContractLinking" o-- "web3dart::src::contracts::deployed_contract.dart::DeployedContract"
+"votedepartment::contract_link.dart::ContractLinking" o-- "web3dart::src::contracts::abi::abi.dart::ContractFunction"
+"votedepartment::contract_link.dart::ContractLinking" o-- "web3dart::src::contracts::abi::abi.dart::ContractEvent"
+"votedepartment::contract_link.dart::ContractLinking" o-- "flutter::src::widgets::editable_text.dart::TextEditingController"
+"flutter::src::foundation::change_notifier.dart::ChangeNotifier" <|-- "votedepartment::contract_link.dart::ContractLinking"
+
+class "votedepartment::splash.dart::Splash" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "votedepartment::splash.dart::Splash"
+
+class "votedepartment::vote.dart::Voteui" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "votedepartment::vote.dart::Voteui"
+
+class "votedepartment::scoped::picker1.dart::Picker" {
+  +PickerModel pick
+  +void changed()
+}
+
+"votedepartment::scoped::picker1.dart::Picker" o-- "votedepartment::scoped::picker1.dart::PickerModel"
+"flutter::src::foundation::change_notifier.dart::ChangeNotifier" <|-- "votedepartment::scoped::picker1.dart::Picker"
+
+class "votedepartment::scoped::picker1.dart::PickerModel" {
+  +int selectedItem
+  +String selectedString
+}
+
+class "votedepartment::scoped::states.dart::Scoped" {
+  +Show state1
+  +void togle()
+}
+
+"votedepartment::scoped::states.dart::Scoped" o-- "votedepartment::models::state.dart::Show"
+"flutter::src::foundation::change_notifier.dart::ChangeNotifier" <|-- "votedepartment::scoped::states.dart::Scoped"
+
+class "votedepartment::scoped::switch1.dart::Switchy" {
+  +SwitchModel witch
+  +Future<void> changes()
+  +void changed()
+  +Future<bool> load()
+}
+
+"votedepartment::scoped::switch1.dart::Switchy" o-- "votedepartment::scoped::switch1.dart::SwitchModel"
+"flutter::src::foundation::change_notifier.dart::ChangeNotifier" <|-- "votedepartment::scoped::switch1.dart::Switchy"
+
+class "votedepartment::scoped::switch1.dart::SwitchModel" {
+  +bool cswitch
+}
+
+
+@enduml

@@ -1,8 +1,11 @@
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:votedepartment/contract_link.dart';
 import 'package:votedepartment/func/signup.dart';
+import 'package:votedepartment/msg.dart';
 import 'package:votedepartment/scoped/picker1.dart';
 
 /*
@@ -40,92 +43,93 @@ class Sign extends StatelessWidget {
     TextEditingController username = TextEditingController();
     TextEditingController password = TextEditingController();
 
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: <Widget>[
-            TextField(
-              controller: username,
-              decoration: const InputDecoration(
-                hintText: "Email",
-                border: OutlineInputBorder(),
-                suffixIcon: Icon(
-                  Icons.check_circle,
-                ),
-              ),
-            ),
-            TextField(
-              controller: password,
-              decoration: const InputDecoration(
-                hintText: "Password",
-                border: OutlineInputBorder(),
-                suffixIcon: Icon(
-                  Icons.check_circle,
-                ),
-              ),
-            ),
-            // picker trigger
-            ChangeNotifierProvider<Picker>(
-              create: (_) => pickerInstance,
-              child: Consumer<Picker>(
-                  builder: (context, model, _) => Column(
-                        children: <Widget>[
-                          Text(model.pick.selectedString.toString()),
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: <Widget>[
+              CupertinoFormSection.insetGrouped(
+                  backgroundColor: CupertinoColors.black,
+                  header: const Text('Add Candidate'),
+                  children: [
+                    CupertinoTextFormFieldRow(
+                      controller: username,
+                      prefix: const Icon(CupertinoIcons.person),
+                      style: const TextStyle(color: Colors.white),
+                      placeholder: 'Email',
+                      validator: (String? value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a value';
+                        }
+                        return null;
+                      },
+                    ),
+                    CupertinoTextFormFieldRow(
+                      controller: password,
+                      obscureText: true,
+                      prefix: const Icon(CupertinoIcons.padlock),
+                      style: const TextStyle(color: Colors.white),
+                      placeholder: 'Password',
+                      validator: (String? value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a value';
+                        }
+                        return null;
+                      },
+                    ),
+                  ]),
 
-                          // btn
-                          OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              primary: Colors.black,
-                              backgroundColor: Colors.white,
+              // picker trigger
+              ChangeNotifierProvider.value(
+                value: pickerInstance,
+                child: Consumer<Picker>(
+                    builder: (context, model, _) => Column(
+                          children: <Widget>[
+                            Text(model.pick.selectedString.toString()),
+
+                            // btn
+                            OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                primary: Colors.black,
+                                backgroundColor: Colors.white,
+                              ),
+                              onPressed: () async {
+                                reg(context, username.text, password.text,
+                                    model.pick.selectedItem);
+                                //contractLink.registerVoter(Parse, canid.text);
+                              },
+                              child: const Text('Register'),
                             ),
-                            onPressed: () async {
-                              reg(context, username.text, password.text,
-                                  model.pick.selectedItem);
-                              //contractLink.registerVoter(Parse, canid.text);
-                            },
-                            child: const Text('Register'),
-                          ),
-                        ],
-                      )),
-            ),
-            // btn
-            OutlinedButton(
-              style: OutlinedButton.styleFrom(
-                primary: Colors.black,
-                backgroundColor: Colors.white,
+                          ],
+                        )),
               ),
-              onPressed: () async {
-                catList(context);
-                //contractLink.registerVoter(Parse, canid.text);
-              },
-              child: const Text('Show List'),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.all(50.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  // padding: const EdgeInsets.all(20.0),
-
-                  const SizedBox(
-                    height: 10.0,
-                  ),
-
-                  // candidate data
-                ],
+              // btn
+              const SizedBox(height: 20.00),
+              OutlinedButton(
+                style: OutlinedButton.styleFrom(
+                  primary: Colors.black,
+                  backgroundColor: Colors.white,
+                ),
+                onPressed: () async {
+                  var link =
+                      Provider.of<ContractLinking>(context, listen: false);
+                  await link.inititalSetup();
+                  await catList(context);
+                  //contractLink.registerVoter(Parse, canid.text);
+                },
+                child: const Text('Show List'),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  void catList(context) {
+  Future<void> catList(context) async {
     var link = Provider.of<ContractLinking>(context, listen: false);
 
     showCupertinoModalPopup(
@@ -133,9 +137,9 @@ class Sign extends StatelessWidget {
         builder: (BuildContext build) {
           return FutureProvider<List>(
             initialData: const [],
-            create: (_) {
+            create: (_) async {
               // print('calling future');
-              return load(context);
+              return await load(context);
             },
             child: Consumer<List>(
               builder: (_, value, __) => Center(

@@ -12,7 +12,7 @@ class ContractLinking extends ChangeNotifier {
   final String _rpcUrl = "http://127.0.0.1:7545";
   final String _wsUrl = "ws://127.0.0.1:7545/";
   final String _privateKey =
-      "2c3ba7c96a6aeadf31c33b49be42c9ef1e16aef85c822e5a0a2c99355f30142e";
+      "fc479ea0cae52fa7b774bcd0969036489ae7b29c592d3512e897528480ae9e09";
   late EthereumAddress owner;
 
   late Web3Client _client;
@@ -69,17 +69,23 @@ class ContractLinking extends ChangeNotifier {
   }
 
   getDeployedContract() async {
-    _contract = DeployedContract(
+    contract = DeployedContract(
         ContractAbi.fromJson(_abiCode, "Ballot"), _contractAddress);
 
-    _entry = _contract.function("entry");
-    _returnMappingValue = _contract.function("returnMappingValue");
+    _entry = contract.function("entry");
+    _returnMappingValue = contract.function("returnMappingValue");
 
-    _catCount = _contract.function("returnCatCount");
-    _returnCats = _contract.function("returnCats");
+    _catCount = contract.function("returnCatCount");
+    _returnCats = contract.function("returnCats");
 
-    _isVoting = _contract.event("isVoting");
-    _error = _contract.event("Error");
+    _isVoting = contract.event("isVoting");
+    _error = contract.event("Error");
+  }
+
+  DeployedContract get contract => _contract;
+  set contract(DeployedContract value) {
+    _contract = value;
+    notifyListeners();
   }
 
   // dep.app
@@ -89,7 +95,7 @@ class ContractLinking extends ChangeNotifier {
     await _client.sendTransaction(
         _credentials,
         Transaction.callContract(
-            contract: _contract, function: _entry, parameters: [rid, id]));
+            contract: contract, function: _entry, parameters: [rid, id]));
     // ignore: avoid_print
     print("Voter Registered $rid");
   }
@@ -97,20 +103,20 @@ class ContractLinking extends ChangeNotifier {
   keyreturns(String rid) async {
     notifyListeners();
 
-    var tvotes = await _client.call(
-        contract: _contract, function: _returnMappingValue, params: [rid]);
+    var tvotes = await _client
+        .call(contract: contract, function: _returnMappingValue, params: [rid]);
     return "$tvotes";
   }
 
   Future<BigInt> catCount() async {
-    var numOfVotes = await _client
-        .call(contract: _contract, function: _catCount, params: []);
+    var numOfVotes =
+        await _client.call(contract: contract, function: _catCount, params: []);
     return numOfVotes.first;
   }
 
   Future<List> returnCats(BigInt id) async {
     final List list = await _client
-        .call(contract: _contract, function: _returnCats, params: [id]);
+        .call(contract: contract, function: _returnCats, params: [id]);
     notifyListeners();
     print(list);
     return list;
@@ -119,7 +125,7 @@ class ContractLinking extends ChangeNotifier {
   // voting states event catcher
   Future<bool> votingState() async {
     final event = await _client
-        .events(FilterOptions.events(contract: _contract, event: _isVoting))
+        .events(FilterOptions.events(contract: contract, event: _isVoting))
         .first;
     final decoded = _isVoting.decodeResults(event.topics!, event.data ?? '');
     final state = decoded[0] ?? '' as bool;
@@ -134,7 +140,7 @@ class ContractLinking extends ChangeNotifier {
       {_i1.BlockNum? fromBlock, _i1.BlockNum? toBlock}) {
     final event = _isVoting;
     final filter = _i1.FilterOptions.events(
-        contract: _contract,
+        contract: contract,
         event: event,
         fromBlock: fromBlock,
         toBlock: toBlock);
@@ -151,7 +157,7 @@ class ContractLinking extends ChangeNotifier {
   Stream<String> errors({_i1.BlockNum? fromBlock, _i1.BlockNum? toBlock}) {
     final event = _error;
     final filter = _i1.FilterOptions.events(
-        contract: _contract,
+        contract: contract,
         event: event,
         fromBlock: fromBlock,
         toBlock: toBlock);

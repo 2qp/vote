@@ -15,7 +15,7 @@ class ContractLinking extends ChangeNotifier {
   final String _rpcUrl = "http://127.0.0.1:7545";
   final String _wsUrl = "ws://127.0.0.1:7545/";
   final String _privateKey =
-      "2c3ba7c96a6aeadf31c33b49be42c9ef1e16aef85c822e5a0a2c99355f30142e";
+      "fc479ea0cae52fa7b774bcd0969036489ae7b29c592d3512e897528480ae9e09";
   late EthereumAddress owner;
 
   late Web3Client _client;
@@ -34,6 +34,8 @@ class ContractLinking extends ChangeNotifier {
   late ContractFunction _getCandidate;
   late ContractFunction _startVoting;
   late ContractFunction _stopVoting;
+  late ContractFunction _end;
+
   late ContractFunction _getState;
   late ContractFunction _addCat;
   late ContractFunction _catCount;
@@ -59,15 +61,23 @@ class ContractLinking extends ChangeNotifier {
     inititalSetup();
   }
 
-  inititalSetup() async {
-    _client = Web3Client(_rpcUrl, Client(), socketConnector: () {
+  Future<void> inititalSetup() async {
+    print("initialized");
+    client = Web3Client(_rpcUrl, Client(), socketConnector: () {
       return WebSocketChannel.connect(Uri.parse(_wsUrl)).cast<String>();
     });
+
     await getAbi();
     await getCredentials();
     await getDeployedContract();
 
-    //await voting();
+    await dispatch(errors());
+  }
+
+  Web3Client get client => _client;
+  set client(Web3Client value) {
+    _client = value;
+    notifyListeners();
   }
 
   Future<void> getAbi() async {
@@ -96,6 +106,7 @@ class ContractLinking extends ChangeNotifier {
     _getCandidate = _contract.function("getCandidate");
     _startVoting = _contract.function("startVoting");
     _stopVoting = _contract.function("stopVoting");
+    _end = _contract.function("end");
     _getState = _contract.function("currentState");
     _addCat = _contract.function("addCats");
     _catCount = _contract.function("returnCatCount");
@@ -103,7 +114,7 @@ class ContractLinking extends ChangeNotifier {
 
     // events
     _returnCandidateID = _contract.event("AddedCandidate");
-    _error = _contract.event("Error");
+    _error = _contract.event("Error3");
     _isCreated = _contract.event("isCreated");
     _isVoting = _contract.event("isVoting");
 
@@ -117,7 +128,7 @@ class ContractLinking extends ChangeNotifier {
   Future<void> addCat(String name) async {
     isLoading = true;
     notifyListeners();
-    await _client.sendTransaction(
+    await client.sendTransaction(
       _credentials,
       Transaction.callContract(
           from: owner,
@@ -131,10 +142,10 @@ class ContractLinking extends ChangeNotifier {
   }
 
   // dep.app
-  Future<void> registerVoter(String name, String party) async {
+  Future<void> addCandidate(String name, String party) async {
     isLoading = true;
     notifyListeners();
-    await _client.sendTransaction(
+    await client.sendTransaction(
       _credentials,
       Transaction.callContract(
           from: owner,
@@ -142,9 +153,9 @@ class ContractLinking extends ChangeNotifier {
           function: _addCandidate,
           parameters: [name, party]),
     );
-    error();
+    // error();
     getNumOfCandidates();
-    print("Voter Registered $name");
+    print("Candidate Added $name");
     isLoading = false;
   }
 
@@ -152,7 +163,7 @@ class ContractLinking extends ChangeNotifier {
   Future<void> startVoting() async {
     isLoading = true;
 
-    await _client.sendTransaction(
+    await client.sendTransaction(
         _credentials,
         Transaction.callContract(
             contract: _contract, function: _startVoting, parameters: []));
@@ -161,11 +172,11 @@ class ContractLinking extends ChangeNotifier {
     notifyListeners();
   }
 
-  // End Voting
+  // pause Voting
   Future<void> stopVoting() async {
     isLoading = true;
 
-    await _client.sendTransaction(
+    await client.sendTransaction(
         _credentials,
         Transaction.callContract(
             contract: _contract, function: _stopVoting, parameters: []));
@@ -174,11 +185,23 @@ class ContractLinking extends ChangeNotifier {
     //await votingState();
   }
 
+  // End
+  Future<void> end() async {
+    isLoading = true;
+
+    await client.sendTransaction(
+        _credentials,
+        Transaction.callContract(
+            contract: _contract, function: _end, parameters: []));
+    isLoading = false;
+    notifyListeners();
+  }
+
   // voting
   vote(String uid, BigInt candidateID) async {
     isLoading = true;
     notifyListeners();
-    await _client.sendTransaction(
+    await client.sendTransaction(
         _credentials,
         Transaction.callContract(
             contract: _contract,
@@ -190,7 +213,7 @@ class ContractLinking extends ChangeNotifier {
   // dep.app
   getNumOfVoters() async {
     notifyListeners();
-    await _client.sendTransaction(
+    await client.sendTransaction(
       _credentials,
       Transaction.callContract(
           contract: _contract, function: _numOfVoters, parameters: []),
@@ -200,14 +223,14 @@ class ContractLinking extends ChangeNotifier {
   getCandidate(BigInt candidateID) async {
     notifyListeners();
 
-    var candidates = await _client.call(
+    var candidates = await client.call(
         contract: _contract, function: _getCandidate, params: [candidateID]);
     return candidates;
   }
 
   // State Getter
   Future<BigInt> getState() async {
-    List state = (await _client
+    List state = (await client
         .call(contract: _contract, function: _getState, params: []));
     notifyListeners();
     return state.first;
@@ -217,14 +240,14 @@ class ContractLinking extends ChangeNotifier {
   totalVotes(BigInt candidateID) async {
     notifyListeners();
 
-    var tvotes = await _client.call(
+    var tvotes = await client.call(
         contract: _contract, function: _totalVotes, params: [candidateID]);
     return "$tvotes";
   }
 
   // depp and public
   winner() async {
-    var numOfVotes = await _client
+    var numOfVotes = await client
         .call(contract: _contract, function: _totalVotes, params: []);
     return numOfVotes;
   }
@@ -233,7 +256,7 @@ class ContractLinking extends ChangeNotifier {
 
   Future<BigInt> returnCandidateID() async {
     notifyListeners();
-    final event = await _client
+    final event = await client
         .events(FilterOptions.events(
             contract: _contract, event: _returnCandidateID))
         .first;
@@ -244,9 +267,9 @@ class ContractLinking extends ChangeNotifier {
   }
 
   // retrives Error String if event dispatched from contract and toast it
-  Future<void> error() async {
+  /* Future<void> error() async {
     notifyListeners();
-    final event = await _client
+    final event = await client
         .events(FilterOptions.events(contract: _contract, event: _error))
         .first;
     final decoded = _error.decodeResults(event.topics!, event.data ?? '');
@@ -255,10 +278,10 @@ class ContractLinking extends ChangeNotifier {
       showsnak(errorcode);
     }
   }
-
+*/
   Future<bool> createdState() async {
     notifyListeners();
-    final event = await _client
+    final event = await client
         .events(FilterOptions.events(contract: _contract, event: _isCreated))
         .first;
     final decoded = _isCreated.decodeResults(event.topics!, event.data ?? '');
@@ -267,7 +290,7 @@ class ContractLinking extends ChangeNotifier {
   }
 
   Future<bool> votingState() async {
-    final event = await _client
+    final event = await client
         .events(FilterOptions.events(contract: _contract, event: _isVoting))
         .first;
     final decoded = _isVoting.decodeResults(event.topics!, event.data ?? '');
@@ -277,8 +300,8 @@ class ContractLinking extends ChangeNotifier {
   }
 
   Future<BigInt> catCount() async {
-    var numOfVotes = await _client
-        .call(contract: _contract, function: _catCount, params: []);
+    var numOfVotes =
+        await client.call(contract: _contract, function: _catCount, params: []);
     return numOfVotes.first;
   }
 
@@ -290,7 +313,7 @@ class ContractLinking extends ChangeNotifier {
     var list = <List>[];
 
     for (int i = 0; i < count2; i++) {
-      var cats = await _client.call(
+      var cats = await client.call(
           contract: _contract, function: _returnCats, params: [BigInt.from(i)]);
       list.add(cats);
     }
@@ -300,7 +323,7 @@ class ContractLinking extends ChangeNotifier {
 
   // get num of candidates
   Future<BigInt> getNumOfCandidates() async {
-    var candidates = await _client
+    var candidates = await client
         .call(contract: _contract, function: _numOfCandidates, params: []);
     return candidates.first;
   }
@@ -315,7 +338,7 @@ class ContractLinking extends ChangeNotifier {
     var list = <List>[];
 
     for (int i = 0; i < count2; i++) {
-      var cats = await _client.call(
+      var cats = await client.call(
           contract: _contract,
           function: _voteswithId,
           params: [BigInt.from(i)]);
@@ -335,7 +358,7 @@ class ContractLinking extends ChangeNotifier {
     var list = <List>[];
 
     for (int i = 0; i < count2; i++) {
-      var cat = await _client.call(
+      var cat = await client.call(
           contract: _contract, function: _votesbycat, params: [BigInt.from(i)]);
       list.add(cat);
     }
@@ -353,7 +376,7 @@ class ContractLinking extends ChangeNotifier {
     var list = <List>[];
 
     for (int i = 0; i < count2; i++) {
-      var cat = await _client.call(
+      var cat = await client.call(
           contract: _contract,
           function: _advancedvotes,
           params: [candidateId, BigInt.from(i)]);
@@ -373,7 +396,7 @@ class ContractLinking extends ChangeNotifier {
     var list = <List>[];
 
     for (int i = 0; i < count2; i++) {
-      var candidate = await _client.call(
+      var candidate = await client.call(
           contract: _contract,
           function: _getCandidateData,
           params: [BigInt.from(i)]);
@@ -382,5 +405,37 @@ class ContractLinking extends ChangeNotifier {
     notifyListeners();
     print(list);
     return list;
+  }
+
+  // error catcher
+  Stream<String> errors({BlockNum? fromBlock, BlockNum? toBlock}) {
+    final event = _error;
+    final filter = FilterOptions.events(
+        contract: _contract,
+        event: event,
+        fromBlock: fromBlock,
+        toBlock: toBlock);
+    return _client.events(filter).map((FilterEvent result) {
+      final decoded = event.decodeResults(result.topics!, result.data!);
+      var state = decoded[0] ?? '';
+      notifyListeners();
+      return state;
+    });
+  }
+
+  // error dispatcher
+
+  // event dispatcher to front as toast
+  Future<void> dispatch(stream) async {
+    stream.listen((event) {
+      showsnak(event.toString());
+    });
+  }
+
+  @override
+  void dispose() {
+    client.dispose();
+
+    super.dispose();
   }
 }

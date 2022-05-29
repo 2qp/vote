@@ -5,7 +5,7 @@ class DatabaseService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
   // checker
-  Future<List<DocumentSnapshot>> isAlreadyExist(nic) async {
+  Future<List<DocumentSnapshot>> isAlreadyExist(int nic) async {
     final result = await _db
         .collection('voters')
         .where('nic', isEqualTo: nic)

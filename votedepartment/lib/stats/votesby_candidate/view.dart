@@ -16,19 +16,21 @@ class PieCharts extends StatelessWidget {
       "Ionic": 2,
     };
     final Data data = Data();
-    return FutureProvider<Map<String, double>>(
-      initialData: gg,
-      create: (_) {
-        return data.fetch(context);
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Consumer<Map<String, double>>(
-          builder: (context, value, child) => PieChart(
-            dataMap: value,
-            chartType: ChartType.disc,
-            baseChartColor: Colors.grey[300]!,
-            //colorList: colorList,
+    return Scaffold(
+      body: FutureProvider<Map<String, double>>(
+        initialData: gg,
+        create: (_) {
+          return data.fetch(context);
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Consumer<Map<String, double>>(
+            builder: (context, value, child) => PieChart(
+              dataMap: value,
+              chartType: ChartType.disc,
+              baseChartColor: Colors.grey[300]!,
+              //colorList: colorList,
+            ),
           ),
         ),
       ),

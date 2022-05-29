@@ -8,7 +8,7 @@ class DatabaseService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   // ### Getters ###
 
-  Future<List<DocumentSnapshot>> isAlreadyExist(id) async {
+  Future<List<DocumentSnapshot>> isAlreadyExist(int id) async {
     final results = await _db
         .collection('voters')
         .where('nic', isEqualTo: id)
@@ -29,7 +29,7 @@ class DatabaseService {
 
   // ### Setters ###
   // Adding Voter
-  Future<void> addVoter(id, rid) async {
+  Future<void> addVoter(int id, rid) async {
     return _db
         .collection("voters")
         .add(Voter(id: id, rid: rid).toMap())

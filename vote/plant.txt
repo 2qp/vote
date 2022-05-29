@@ -1,0 +1,193 @@
+@startuml
+set namespaceSeparator ::
+
+class "vote::app.dart::App" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "vote::app.dart::App"
+
+class "vote::db::db.dart::DatabaseService" {
+  -FirebaseFirestore _db
+  +Stream<List<Weapon>> streamWeapons()
+}
+
+"vote::db::db.dart::DatabaseService" o-- "cloud_firestore::cloud_firestore.dart::FirebaseFirestore"
+
+class "vote::services::db.dart::DatabaseService" {
+  -FirebaseFirestore _db
+  +Future<List<DocumentSnapshot<Object?>>> isAlreadyExist()
+}
+
+"vote::services::db.dart::DatabaseService" o-- "cloud_firestore::cloud_firestore.dart::FirebaseFirestore"
+
+class "vote::services::storage.dart::Storage" {
+  -FirebaseStorage _fs
+  +Future<String> getUrl()
+}
+
+"vote::services::storage.dart::Storage" o-- "firebase_storage::firebase_storage.dart::FirebaseStorage"
+
+class "vote::models::candidate.dart::Weapon" {
+  +int id
+  +String name
+  +String party
+  +String img
+}
+
+class "vote::models::counter.dart::Counter" {
+  +int count
+}
+
+class "vote::generated::l10n.dart::S" {
+  {static} -S? _current
+  {static} +AppLocalizationDelegate delegate
+  {static} +S current
+  {static} +Future<S> load()
+  {static} +S of()
+  {static} +S? maybeOf()
+}
+
+"vote::generated::l10n.dart::S" o-- "vote::generated::l10n.dart::S"
+"vote::generated::l10n.dart::S" o-- "vote::generated::l10n.dart::AppLocalizationDelegate"
+
+class "vote::generated::l10n.dart::AppLocalizationDelegate" {
+  +List<Locale> supportedLocales
+  +bool isSupported()
+  +Future<S> load()
+  +bool shouldReload()
+  -bool _isSupported()
+}
+
+"flutter::src::widgets::localizations.dart::LocalizationsDelegate" <|-- "vote::generated::l10n.dart::AppLocalizationDelegate"
+
+class "vote::generated::intl::messages_en.dart::MessageLookup" {
+  +Map<String, dynamic> messages
+  +String localeName
+  {static} -Map<String, Function> _notInlinedMessages()
+}
+
+"intl::message_lookup_by_library.dart::MessageLookupByLibrary" <|-- "vote::generated::intl::messages_en.dart::MessageLookup"
+
+class "vote::firebase_options.dart::DefaultFirebaseOptions" {
+  {static} +FirebaseOptions web
+  {static} +FirebaseOptions android
+  {static} +FirebaseOptions currentPlatform
+}
+
+"vote::firebase_options.dart::DefaultFirebaseOptions" o-- "firebase_core_platform_interface::firebase_core_platform_interface.dart::FirebaseOptions"
+
+class "vote::ui::validateui.dart::ValidateUi" {
+  +Widget build()
+  +Future<dynamic> validate()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "vote::ui::validateui.dart::ValidateUi"
+
+class "vote::ui::validateui.dart::CurvePainter" {
+  +void paint()
+  +bool shouldRepaint()
+}
+
+"flutter::src::rendering::custom_paint.dart::CustomPainter" <|-- "vote::ui::validateui.dart::CurvePainter"
+
+class "vote::ui::votingui.dart::VotingUi" {
+  +int id
+  +int voter
+  +String name
+  +String party
+  +Widget build()
+  +Future<void> vote()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "vote::ui::votingui.dart::VotingUi"
+
+class "vote::vote.dart::Voteui" {
+  +Widget build()
+  +void vote()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "vote::vote.dart::Voteui"
+
+class "vote::screens::home::candidatesUI.dart::CandidatesUI" {
+  +int voter
+  +Widget build()
+  +Future<List<dynamic>> load()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "vote::screens::home::candidatesUI.dart::CandidatesUI"
+
+class "vote::screens::home::widget1.dart::Widget1" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "vote::screens::home::widget1.dart::Widget1"
+
+class "vote::screens::home::widget2.dart::Widget2" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "vote::screens::home::widget2.dart::Widget2"
+
+class "vote::screens::home::widget3.dart::Widget3" {
+  +Widget build()
+}
+
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "vote::screens::home::widget3.dart::Widget3"
+
+class "vote::screens::home::home.dart::Home" {
+  +ScopedCounter scopedCounter
+  +Widget build()
+}
+
+"vote::screens::home::home.dart::Home" o-- "vote::scoped::counters.dart::ScopedCounter"
+"flutter::src::widgets::framework.dart::StatelessWidget" <|-- "vote::screens::home::home.dart::Home"
+
+class "vote::contract_linking.dart::ContractLinking" {
+  -String _rpcUrl
+  -String _wsUrl
+  -String _privateKey
+  +EthereumAddress owner
+  -Web3Client _client
+  -String _abiCode
+  -Credentials _credentials
+  -EthereumAddress _contractAddress
+  -DeployedContract _contract
+  -ContractFunction _voteFunc
+  -ContractFunction _numOfVoters
+  -ContractFunction _getCandidate
+  -ContractFunction _numOfCandidates
+  -ContractEvent _error
+  +bool isLoading
+  +DeployedContract contract
+  +Future<void> inititalSetup()
+  +Future<void> getAbi()
+  +Future<void> getCredentials()
+  +Future<void> getDeployedContract()
+  +dynamic vote()
+  +dynamic getNumOfVoters()
+  +Future<String> error()
+  +Future<BigInt> getNumOfCandidates()
+  +Future<List<dynamic>> getCandidateList()
+}
+
+"vote::contract_linking.dart::ContractLinking" o-- "web3dart::src::credentials::address.dart::EthereumAddress"
+"vote::contract_linking.dart::ContractLinking" o-- "web3dart::web3dart.dart::Web3Client"
+"vote::contract_linking.dart::ContractLinking" o-- "web3dart::src::credentials::credentials.dart::Credentials"
+"vote::contract_linking.dart::ContractLinking" o-- "web3dart::src::contracts::deployed_contract.dart::DeployedContract"
+"vote::contract_linking.dart::ContractLinking" o-- "web3dart::src::contracts::abi::abi.dart::ContractFunction"
+"vote::contract_linking.dart::ContractLinking" o-- "web3dart::src::contracts::abi::abi.dart::ContractEvent"
+"flutter::src::foundation::change_notifier.dart::ChangeNotifier" <|-- "vote::contract_linking.dart::ContractLinking"
+
+class "vote::scoped::counters.dart::ScopedCounter" {
+  +Counter counter1
+  +Counter counter2
+  +Counter counter3
+  +dynamic increment()
+}
+
+"vote::scoped::counters.dart::ScopedCounter" o-- "vote::models::counter.dart::Counter"
+"flutter::src::foundation::change_notifier.dart::ChangeNotifier" <|-- "vote::scoped::counters.dart::ScopedCounter"
+
+
+@enduml

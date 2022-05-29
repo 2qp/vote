@@ -84,14 +84,11 @@ class Voteui extends StatelessWidget {
 
     // firestore
 
-    final documents = await db.isAlreadyExist(text1);
+    final documents = await db.isAlreadyExist(int.parse(text1));
     if (documents.length == 1) {
       String rid = documents.first.get("rid");
       var letsvote = await contractLink.vote(can2, rid);
 
-      // eventer
-      String errorcode = await contractLink.error();
-      showsnak(errorcode);
       showsnak("Vote Casted");
 
       // ignore: avoid_print
